@@ -1,0 +1,6 @@
+#!/bin/bash
+echo "Content-type: text/plain"
+
+curl -X POST "http://10.0.0.229:5001/api/v0/bitswap/reprovide"
+
+# This endpoint takes no arguments.
