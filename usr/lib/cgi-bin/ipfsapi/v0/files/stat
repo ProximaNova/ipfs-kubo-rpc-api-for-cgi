@@ -1,5 +1,20 @@
 #!/bin/bash
 echo "Content-type: application/json"
-echo
-arg="$(echo -n "$REQUEST_URI" | sed "s/.*?arg=//g")"
-curl -X POST "http://10.0.0.229:5001/api/v0/files/stat?arg=$arg"
+echo; url="$REQUEST_URI"
+
+eval $(echo "$url" | awk -F'[=&?]' '{print $2}')=$(echo "$url" | awk -F'[=&?]' '{print $3}')
+eval $(echo "$url" | awk -F'[=&?]' '{print $4}')=$(echo "$url" | awk -F'[=&?]' '{print $5}')
+eval $(echo "$url" | awk -F'[=&?]' '{print $6}')=$(echo "$url" | awk -F'[=&?]' '{print $7}')
+eval $(echo "$url" | awk -F'[=&?]' '{print $8}')=$(echo "$url" | awk -F'[=&?]' '{print $9}')
+eval $(echo "$url" | awk -F'[=&?]' '{print $10}')=$(echo "$url" | awk -F'[=&?]' '{print $11}')
+
+curl -X POST "http://10.0.0.229:5001/api/v0/files/stat?arg=$arg&format=$format&hash=$hash&size=$size&with-local=$withlocal"
+
+# arg [string]: Path to node to stat. Required: yes.
+# format [string]: Print statistics in given format. Allowed tokens: <hash> <size> <cumulsize> <type> <childs>. Conflicts with other format options. Default: <hash> Size: <size> CumulativeSize: <cumulsize> ChildBlocks: <childs> Type: <type>. Default: <hash> Size: <size> CumulativeSize: <cumulsize> ChildBlocks: <childs> Type: <type>. Required: no.
+# hash [bool]: Print only hash. Implies '--format=<hash>'. Conflicts with other format options. Required: no.
+# size [bool]: Print only size. Implies '--format=<cumulsize>'. Conflicts with other format options. Required: no.
+# with-local [bool]: Compute the amount of the dag that is local, and if possible the total size. Required: no.
+
+# URL GET var RENAMED: with-local->withlocal
+# Bash does not allow variable names to contain hyphens
