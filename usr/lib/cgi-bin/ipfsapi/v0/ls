@@ -1,0 +1,20 @@
+#!/bin/bash
+echo "Content-type: application/json"
+echo; url="$REQUEST_URI"
+
+eval $(echo "$url" | awk -F'[=&?]' '{print $2}')=$(echo "$url" | awk -F'[=&?]' '{print $3}')
+eval $(echo "$url" | awk -F'[=&?]' '{print $4}')=$(echo "$url" | awk -F'[=&?]' '{print $5}')
+eval $(echo "$url" | awk -F'[=&?]' '{print $6}')=$(echo "$url" | awk -F'[=&?]' '{print $7}')
+eval $(echo "$url" | awk -F'[=&?]' '{print $8}')=$(echo "$url" | awk -F'[=&?]' '{print $9}')
+eval $(echo "$url" | awk -F'[=&?]' '{print $10}')=$(echo "$url" | awk -F'[=&?]' '{print $11}')
+
+curl -X POST "http://10.0.0.229:5001/api/v0/ls?arg=$arg&headers=$headers&resolve-type=$resolvetype&size=$size&stream=$stream"
+
+# arg [string]: The path to the IPFS object(s) to list links from. Required: yes.
+# headers [bool]: Print table headers (Hash, Size, Name). Required: no.
+# resolve-type [bool]: Resolve linked objects to find out their types. Default: true. Required: no.
+# size [bool]: Resolve linked objects to find out their file size. Default: true. Required: no.
+# stream [bool]: Enable experimental streaming of directory entries as they are traversed. Required: no.
+
+# PROBLEM: Bash variable with hyphen. They cannot contain any hyphen
+# RENAMED URL var: resolve-type->resolvetype
