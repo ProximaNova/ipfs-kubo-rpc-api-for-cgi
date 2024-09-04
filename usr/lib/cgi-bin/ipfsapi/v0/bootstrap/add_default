@@ -1,0 +1,9 @@
+#!/bin/bash
+echo "Content-type: application/json"
+echo
+
+curl -X POST "http://10.0.0.229:5001/api/v0/bootstrap/add/default"
+
+# This endpoint takes no arguments.
+
+# RENAMED: add/default->add_default
