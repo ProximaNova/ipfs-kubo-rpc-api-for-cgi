@@ -1,0 +1,13 @@
+#!/bin/bash
+echo "Content-type: application/json"
+echo; url="$REQUEST_URI"
+
+eval $(echo "$url" | awk -F'[=&?]' '{print $2}')=$(echo "$url" | awk -F'[=&?]' '{print $3}')
+eval $(echo "$url" | awk -F'[=&?]' '{print $4}')=$(echo "$url" | awk -F'[=&?]' '{print $5}')
+
+curl -X POST "http://10.0.0.229:5001/api/v0/bitswap/stat?verbose=$verbose&human=$human"
+
+# verbose [bool]: Print extra information. Required: no.
+# human [bool]: Print sizes in human readable format (e.g., 1K 234M 2G). Required: no.
+
+# BUG IN Kubo RPC API: "human" does nothing
