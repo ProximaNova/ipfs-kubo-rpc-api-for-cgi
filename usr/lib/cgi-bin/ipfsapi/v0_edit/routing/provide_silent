@@ -1,0 +1,7 @@
+#!/bin/bash
+echo "Content-type: text/plain"
+echo
+arg="$(echo -n "$REQUEST_URI" | sed "s/.*?arg=//g")"
+echo "Working..."
+curl -X POST "http://10.0.0.229:5001/api/v0/routing/provide?arg=$arg&recursive=true" >/dev/null 2>/dev/null
+echo "Done."
