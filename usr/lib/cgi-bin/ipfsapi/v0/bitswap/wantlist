@@ -4,7 +4,9 @@ echo; url="$REQUEST_URI"
 
 eval $(echo "$url" | awk -F'[=&?]' '{print $2}')=$(echo "$url" | awk -F'[=&?]' '{print $3}')
 
-curl -X POST "http://10.0.0.229:5001/api/v0/bitswap/wantlist?peer=$peer"
+if [ ! -z $peer ]; then peer_="peer=$peer"; fi
+
+curl -X POST "http://10.0.0.229:5001/api/v0/bitswap/wantlist?$peer_"
 
 # peer [string]: Specify which peer to show wantlist for. Required: no.
 
