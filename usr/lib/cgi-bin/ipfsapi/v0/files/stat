@@ -8,7 +8,12 @@ eval $(echo "$url" | awk -F'[=&?]' '{print $6}')=$(echo "$url" | awk -F'[=&?]' '
 eval $(echo "$url" | awk -F'[=&?]' '{print $8}')=$(echo "$url" | awk -F'[=&?]' '{print $9}')
 eval $(echo "$url" | awk -F'[=&?]' '{print $10}')=$(echo "$url" | awk -F'[=&?]' '{print $11}')
 
-curl -X POST "http://10.0.0.229:5001/api/v0/files/stat?arg=$arg&format=$format&hash=$hash&size=$size&with-local=$withlocal"
+if [ ! -z $format ]; then format_="&format=$format"; fi
+if [ ! -z $hash ]; then hash_="&hash=$hash"; fi
+if [ ! -z $size ]; then size_="&size=$size"; fi
+if [ ! -z $withlocal ]; then withlocal_="&with-local=$withlocal"; fi
+
+curl -X POST "http://10.0.0.229:5001/api/v0/files/stat?arg=$arg$format_$hash_$size_$withlocal_"
 
 # arg [string]: Path to node to stat. Required: yes.
 # format [string]: Print statistics in given format. Allowed tokens: <hash> <size> <cumulsize> <type> <childs>. Conflicts with other format options. Default: <hash> Size: <size> CumulativeSize: <cumulsize> ChildBlocks: <childs> Type: <type>. Default: <hash> Size: <size> CumulativeSize: <cumulsize> ChildBlocks: <childs> Type: <type>. Required: no.
