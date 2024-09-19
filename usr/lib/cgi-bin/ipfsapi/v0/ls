@@ -8,7 +8,12 @@ eval $(echo "$url" | awk -F'[=&?]' '{print $6}')=$(echo "$url" | awk -F'[=&?]' '
 eval $(echo "$url" | awk -F'[=&?]' '{print $8}')=$(echo "$url" | awk -F'[=&?]' '{print $9}')
 eval $(echo "$url" | awk -F'[=&?]' '{print $10}')=$(echo "$url" | awk -F'[=&?]' '{print $11}')
 
-curl -X POST "http://10.0.0.229:5001/api/v0/ls?arg=$arg&headers=$headers&resolve-type=$resolvetype&size=$size&stream=$stream"
+if [ ! -z $headers ]; then headers_="&headers=$headers"; fi
+if [ ! -z $resolvetype ]; then resolvetype_="&resolve-type=$resolvetype"; fi
+if [ ! -z $size ]; then size_="&size=$size"; fi
+if [ ! -z $stream ]; then stream_="&stream=$stream"; fi
+
+curl -X POST "http://10.0.0.229:5001/api/v0/ls?arg=$arg$headers_$resolvetype_$size_$stream_"
 
 # arg [string]: The path to the IPFS object(s) to list links from. Required: yes.
 # headers [bool]: Print table headers (Hash, Size, Name). Required: no.
