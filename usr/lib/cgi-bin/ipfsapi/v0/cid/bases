@@ -5,7 +5,12 @@ echo; url="$REQUEST_URI"
 eval $(echo "$url" | awk -F'[=&?]' '{print $2}')=$(echo "$url" | awk -F'[=&?]' '{print $3}')
 eval $(echo "$url" | awk -F'[=&?]' '{print $4}')=$(echo "$url" | awk -F'[=&?]' '{print $5}')
 
-curl -X POST "http://10.0.0.229:5001/api/v0/cid/bases?prefix=$prefix&numeric=$numeric"
+if [ ! -z $prefix ]; then prefix_="&prefix=$prefix"; fi
+if [ ! -z $numeric ]; then numeric_="&numeric=$numeric"; fi
+
+curl -X POST "http://10.0.0.229:5001/api/v0/cid/bases?$prefix_$numeric_"
 
 # prefix [bool]: also include the single letter prefixes in addition to the code. Required: no.
 # numeric [bool]: also include numeric codes. Required: no.
+
+# ?&
