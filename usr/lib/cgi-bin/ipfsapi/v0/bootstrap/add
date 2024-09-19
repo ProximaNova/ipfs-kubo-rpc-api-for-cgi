@@ -5,9 +5,14 @@ echo; url="$REQUEST_URI"
 eval $(echo "$url" | awk -F'[=&?]' '{print $2}')=$(echo "$url" | awk -F'[=&?]' '{print $3}')
 eval $(echo "$url" | awk -F'[=&?]' '{print $4}')=$(echo "$url" | awk -F'[=&?]' '{print $5}')
 
-curl -X POST "http://10.0.0.229:5001/api/v0/bootstrap/add?arg=$arg&default=$default"
+if [ ! -z $arg ]; then arg_="&arg=$arg"; fi
+if [ ! -z $default ]; then default_="&default=$default"; fi
+
+curl -X POST "http://10.0.0.229:5001/api/v0/bootstrap/add?$arg_$default_"
 
 # arg [string]: A peer to add to the bootstrap list (in the format '<multiaddr>/<peerID>') Required: no.
 # default [bool]: Add default bootstrap nodes. (Deprecated, use 'default' subcommand instead). Required: no.
 
 # BUG: doesn't work?
+
+# Stupid code: ?&
