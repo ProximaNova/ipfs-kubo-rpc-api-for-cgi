@@ -20,4 +20,12 @@ curl -sL "http://10.0.0.232/cgi-bin/ipfsapi/v0_edit_mpc/add?file=$basepath/$time
 curl -sL "http://10.0.0.232/cgi-bin/ipfsapi/v0_edit_mpc/add?file=$basepath/$time-$urlsafe.txt&rawleaves=true" >> $basepath/$time-$urlsafe.ipfs.txt
 curl -sL "http://10.0.0.232/cgi-bin/ipfsapi/v0_edit_mpc/add?file=$basepath/$time-$urlsafe-meta.warc.gz&rawleaves=true" >> $basepath/$time-$urlsafe.ipfs.txt
 curl -sL "http://10.0.0.232/cgi-bin/ipfsapi/v0_edit_mpc/add?file=$basepath/$time-$urlsafe.cdx&rawleaves=true" >> $basepath/$time-$urlsafe.ipfs.txt
-curl -sL "http://10.0.0.232/cgi-bin/ipfsapi/v0_edit_mpc/add?file=$basepath/$time-$urlsafe.ipfs.txt&rawleaves=true" > $basepath/$time-$urlsafe.ipfs.set.txt; cat $basepath/$time-$urlsafe.ipfs.set.txt
+curl -sL "http://10.0.0.232/cgi-bin/ipfsapi/v0_edit_mpc/add?file=$basepath/$time-$urlsafe.ipfs.txt&rawleaves=true" > $basepath/$time-$urlsafe.ipfs.set.txt; cat $basepath/$time-$urlsafe.ipfs.set.txt; echo
+echo "Which CONTAINS:"
+cat $basepath/$time-$urlsafe.ipfs.txt; echo
+echo "Which are these CIDs:"
+maincid=$(cat $basepath/$time-$urlsafe.ipfs.set.txt | jq .Hash | sed "s/\"//g")
+subcids=$(cat $basepath/$time-$urlsafe.ipfs.txt | jq .Hash | sed "s/\"//g" | perl -pE "s/\n/ /g")
+echo $maincid $subcids; echo
+echo "Copying to HPC:"
+echo $maincid $subcids | tr -d \\n | xargs -d " " sh -c 'for args do TZ=UTC wget -O/dev/null http://10.0.0.229:8080/ipfs/$args 2>&1; done' _
