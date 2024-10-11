@@ -1,0 +1,84 @@
+#!/bin/bash
+echo "Content-type: application/json"
+echo; url="$REQUEST_URI"
+
+eval $(echo "$url" | awk -F'[=&?]' '{print $2}')=$(echo "$url" | awk -F'[=&?]' '{print $3}')
+eval $(echo "$url" | awk -F'[=&?]' '{print $4}')=$(echo "$url" | awk -F'[=&?]' '{print $5}')
+eval $(echo "$url" | awk -F'[=&?]' '{print $6}')=$(echo "$url" | awk -F'[=&?]' '{print $7}')
+eval $(echo "$url" | awk -F'[=&?]' '{print $8}')=$(echo "$url" | awk -F'[=&?]' '{print $9}')
+eval $(echo "$url" | awk -F'[=&?]' '{print $10}')=$(echo "$url" | awk -F'[=&?]' '{print $11}')
+eval $(echo "$url" | awk -F'[=&?]' '{print $12}')=$(echo "$url" | awk -F'[=&?]' '{print $13}')
+eval $(echo "$url" | awk -F'[=&?]' '{print $14}')=$(echo "$url" | awk -F'[=&?]' '{print $15}')
+eval $(echo "$url" | awk -F'[=&?]' '{print $16}')=$(echo "$url" | awk -F'[=&?]' '{print $17}')
+eval $(echo "$url" | awk -F'[=&?]' '{print $18}')=$(echo "$url" | awk -F'[=&?]' '{print $19}')
+eval $(echo "$url" | awk -F'[=&?]' '{print $20}')=$(echo "$url" | awk -F'[=&?]' '{print $21}')
+eval $(echo "$url" | awk -F'[=&?]' '{print $22}')=$(echo "$url" | awk -F'[=&?]' '{print $23}')
+eval $(echo "$url" | awk -F'[=&?]' '{print $24}')=$(echo "$url" | awk -F'[=&?]' '{print $25}')
+eval $(echo "$url" | awk -F'[=&?]' '{print $26}')=$(echo "$url" | awk -F'[=&?]' '{print $27}')
+eval $(echo "$url" | awk -F'[=&?]' '{print $28}')=$(echo "$url" | awk -F'[=&?]' '{print $29}')
+eval $(echo "$url" | awk -F'[=&?]' '{print $30}')=$(echo "$url" | awk -F'[=&?]' '{print $31}')
+eval $(echo "$url" | awk -F'[=&?]' '{print $32}')=$(echo "$url" | awk -F'[=&?]' '{print $33}')
+eval $(echo "$url" | awk -F'[=&?]' '{print $34}')=$(echo "$url" | awk -F'[=&?]' '{print $35}')
+eval $(echo "$url" | awk -F'[=&?]' '{print $36}')=$(echo "$url" | awk -F'[=&?]' '{print $37}')
+eval $(echo "$url" | awk -F'[=&?]' '{print $38}')=$(echo "$url" | awk -F'[=&?]' '{print $39}')
+eval $(echo "$url" | awk -F'[=&?]' '{print $40}')=$(echo "$url" | awk -F'[=&?]' '{print $41}')
+eval $(echo "$url" | awk -F'[=&?]' '{print $42}')=$(echo "$url" | awk -F'[=&?]' '{print $43}')
+eval $(echo "$url" | awk -F'[=&?]' '{print $44}')=$(echo "$url" | awk -F'[=&?]' '{print $45}')
+eval $(echo "$url" | awk -F'[=&?]' '{print $46}')=$(echo "$url" | awk -F'[=&?]' '{print $47}')
+
+if [ ! -z $quiet ]; then quiet_="&quiet=$quiet"; fi
+if [ ! -z $quieter ]; then quieter_="&resolve-type=$quieter"; fi
+if [ ! -z $silent ]; then silent_="&silent=$silent"; fi
+if [ ! -z $progress ]; then progress_="&progress=$progress"; fi
+if [ ! -z $trickle ]; then trickle_="&trickle=$trickle"; fi
+if [ ! -z $onlyhash ]; then onlyhash_="&only-hash=$onlyhash"; fi
+if [ ! -z $wrapwithdirectory ]; then wrapwithdirectory_="&wrap-with-directory=$wrapwithdirectory"; fi
+if [ ! -z $chunker ]; then chunker_="&chunker=$chunker"; fi
+if [ ! -z $rawleaves ]; then rawleaves_="&raw-leaves=$rawleaves"; fi
+if [ ! -z $nocopy ]; then nocopy_="&nocopy=$nocopy"; fi
+if [ ! -z $fscache ]; then fscache_="&fscache=$fscache"; fi
+if [ ! -z $cidversion ]; then cidversion_="&cid-version=$cidversion"; fi
+if [ ! -z $hash ]; then hash_="&hash=$hash"; fi
+if [ ! -z $inline ]; then inline_="&inline=$inline"; fi
+if [ ! -z $inlinelimit ]; then inlinelimit_="&inline-limit=$inlinelimit"; fi
+if [ ! -z $pin ]; then pin_="&pin=$pin"; fi
+if [ ! -z $tofiles ]; then tofiles_="&to-files=$tofiles"; fi
+if [ ! -z $preservemode ]; then preservemode_="&preserve-mode=$preservemode"; fi
+if [ ! -z $preservemtime ]; then preservemtime_="&preserve-mtime=$preservemtime"; fi
+if [ ! -z $mode ]; then mode_="&mode=$mode"; fi
+if [ ! -z $mtime ]; then mtime_="&mtime=$mtime"; fi
+if [ ! -z $mtimensecs ]; then mtimensecs_="&mtime-nsecs=$mtimensecs"; fi
+
+curl -X POST -F file=@"$file" "http://10.0.0.229:5001/api/v0/add?$quiet_$quieter_$silent_$progress_$trickle_$onlyhash_$wrapwithdirectory_$chunker_$rawleaves_$nocopy_$fscache_$cidversion_$hash_$inline_$inlinelimit_$pin_$tofiles_$preservemode_$preservemtime_$mode_$mtime_$mtimensecs_"
+
+# quiet [bool]: Write minimal output. Required: no.
+# quieter [bool]: Write only final hash. Required: no.
+# silent [bool]: Write no output. Required: no.
+# progress [bool]: Stream progress data. Required: no.
+# trickle [bool]: Use trickle-dag format for dag generation. Required: no.
+# only-hash [bool]: Only chunk and hash - do not write to disk. Required: no.
+# wrap-with-directory [bool]: Wrap files with a directory object. Required: no.
+# chunker [string]: Chunking algorithm, size-[bytes], rabin-[min]-[avg]-[max] or buzhash. Required: no.
+# raw-leaves [bool]: Use raw blocks for leaf nodes. Required: no.
+# nocopy [bool]: Add the file using filestore. Implies raw-leaves. (experimental). Required: no.
+# fscache [bool]: Check the filestore for pre-existing blocks. (experimental). Required: no.
+# cid-version [int]: CID version. Defaults to 0 unless an option that depends on CIDv1 is passed. Passing version 1 will cause the raw-leaves option to default to true. Required: no.
+# hash [string]: Hash function to use. Implies CIDv1 if not sha2-256. (experimental). Required: no.
+# inline [bool]: Inline small blocks into CIDs. (experimental). Required: no.
+# inline-limit [int]: Maximum block size to inline. (experimental). Default: 32. Required: no.
+# pin [bool]: Pin locally to protect added files from garbage collection. Default: true. Required: no.
+# to-files [string]: Add reference to Files API (MFS) at the provided path. Required: no.
+# preserve-mode [bool]: Apply existing POSIX permissions to created UnixFS entries. Disables raw-leaves. (experimental). Required: no.
+# preserve-mtime [bool]: Apply existing POSIX modification time to created UnixFS entries. Disables raw-leaves. (experimental). Required: no.
+# mode [uint]: Custom POSIX file mode to store in created UnixFS entries. Disables raw-leaves. (experimental). Required: no.
+# mtime [int64]: Custom POSIX modification time to store in created UnixFS entries (seconds before or after the Unix Epoch). Disables raw-leaves. (experimental). Required: no.
+# mtime-nsecs [uint]: Custom POSIX modification time (optional time fraction in nanoseconds). Required: no.
+
+# PROBLEM: Bash variable with hyphen. They cannot contain any hyphen.
+# RENAMED URL vars: only-hash->onlyhash; wrap-with-directory->wrapwithdirectory
+# RENAMED URL vars: raw-leaves->rawleaves; cid-version->cidversion
+# RENAMED URL vars: inline-limit->inlinelimit; to-files->tofiles
+# RENAMED URL vars: preserve-mode->preservemode; preserve-mtime->preservemtime
+# RENAMED URL vars: mtime-nsecs->mtimensecs
+# ADDED URL var: file [string]: for "-F file=@myfile". Required: yes.
+# ?&
