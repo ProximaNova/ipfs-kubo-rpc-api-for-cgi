@@ -7,7 +7,7 @@ eval $(echo "$url" | awk -F'[=&?]' '{print $4}')=$(echo "$url" | awk -F'[=&?]' '
 
 if [ ! -z $progress ]; then progress_="&progress=$progress"; fi
 
-curl -X POST "http://10.0.0.229:5001/api/v0/export?arg=$arg$progress_"
+curl -X POST "http://10.0.0.229:5001/api/v0/dag/export?arg=$arg$progress_"
 
 # arg [string]: CID of a root to recursively export Required: yes.
 # progress [bool]: Display progress on CLI. Defaults to true when STDERR is a TTY. Required: no.
