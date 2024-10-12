@@ -18,20 +18,26 @@ echo "Main CID:"
 #-- wget, not recursive:
 cd $basepath; TZ=UTC wget --no-check-certificate -p --span-hosts --adjust-extension --convert-links --restrict-file-names=windows --warc-max-size=99123456 --warc-cdx -e robots=off --warc-file=$basepath/$time-$urlsafe "$url" 2>/dev/null #2> is saved to meta warc
 #-- grab-site:
+#...
 #-- lynx:
+#...
 
 curl -sL "http://10.0.0.232/cgi-bin/ipfsapi/v0_edit_mpc/add?file=$basepath/$time-$urlsafe-00000.warc.gz&rawleaves=true" >> $basepath/$time-$urlsafe.ipfs.txt
 curl -sL "http://10.0.0.232/cgi-bin/ipfsapi/v0_edit_mpc/add?file=$basepath/$time-$urlsafe.txt&rawleaves=true" >> $basepath/$time-$urlsafe.ipfs.txt
 curl -sL "http://10.0.0.232/cgi-bin/ipfsapi/v0_edit_mpc/add?file=$basepath/$time-$urlsafe-meta.warc.gz&rawleaves=true" >> $basepath/$time-$urlsafe.ipfs.txt
 curl -sL "http://10.0.0.232/cgi-bin/ipfsapi/v0_edit_mpc/add?file=$basepath/$time-$urlsafe.cdx&rawleaves=true" >> $basepath/$time-$urlsafe.ipfs.txt
 curl -sL "http://10.0.0.232/cgi-bin/ipfsapi/v0_edit_mpc/add?file=$basepath/$time-$urlsafe.ipfs.txt&rawleaves=true" > $basepath/$time-$urlsafe.ipfs.set.txt; cat $basepath/$time-$urlsafe.ipfs.set.txt; echo
+
 echo "Which CONTAINS:"
 cat $basepath/$time-$urlsafe.ipfs.txt; echo
+
 echo "Which are these 5 CIDs:"
 maincid=$(cat $basepath/$time-$urlsafe.ipfs.set.txt | jq .Hash | sed "s/\"//g")
 subcids=$(cat $basepath/$time-$urlsafe.ipfs.txt | jq .Hash | sed "s/\"//g" | perl -pE "s/\n/ /g")
 echo $maincid.$(echo $subcids | sed "s/ /./g"); echo
+
 echo "== Copying to HPC =="; echo
-echo $maincid $subcids | tr -d \\n | xargs -d " " sh -c 'for args do TZ=UTC wget -O/dev/null http://10.0.0.229:8080/ipfs/$args 2>&1; done' _
+echo $maincid $subcids | tr -d \\n | xargs -d " " sh -c 'for args do TZ=UTC wget -O/dev/null http://10.0.0.232/cgi-bin/ipfsapi/v0/dag/export?arg=$args 2>&1; done' _
+
 echo "== First 90K if HTML =="; echo
 zcat $basepath/$time-$urlsafe-00000.warc.gz | grep -A999999999999 "<html" | head -c90100
