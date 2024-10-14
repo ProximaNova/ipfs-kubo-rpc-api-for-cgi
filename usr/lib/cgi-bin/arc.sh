@@ -3,7 +3,8 @@ echo "Content-type: text/plain"
 echo
 pidcount=$(ps -ef | grep -v grep | grep arc.sh | wc -l)
 if [ $pidcount -gt 5 ]; then
-    echo "Too many arc.sh PID(s) detected, exiting..."
+    echo "Too many arc.sh PID(s) detected. Try again later. PID(s):"
+    ps -ef | grep -v grep | grep arc.sh | grep -n $
     exit 0
 else
     url="$(echo -n "$REQUEST_URI" | sed "s/.*?url=//g")"
@@ -24,9 +25,6 @@ else
 #TZ=UTC wget --no-check-certificate -pr --adjust-extension --convert-links --restrict-file-names=windows --warc-max-size=99123456 --warc-cdx -e robots=off --warc-file=$basepath/$time "$url" 1>$basepath/wget$time.txt 2>$basepath/wget$time.txt
     #-- wget, not recursive:
     cd $basepath; TZ=UTC wget --no-check-certificate -p --span-hosts --adjust-extension --convert-links --restrict-file-names=windows --warc-max-size=99123456 --warc-cdx -e robots=off --warc-file=$basepath/$time-$urlsafe "$url" 2>/dev/null #2> is saved to meta warc
-    #-- page requisites (-p) downloaded like 150 MB of videos
-    #-- from https://wiki.froth.zone/wiki/Prelinger_Archives
-    #-- so make an option to have -p off
 #-- grab-site:
 #-- ...
 #-- lynx:
