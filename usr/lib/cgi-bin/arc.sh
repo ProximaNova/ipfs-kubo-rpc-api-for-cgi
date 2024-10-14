@@ -30,10 +30,13 @@ else
 #-- lynx:
 #-- ...
 
-    curl -sL "http://10.0.0.232/cgi-bin/ipfsapi/v0_edit_mpc/add?file=$basepath/$time-$urlsafe-00000.warc.gz&rawleaves=true" >> $basepath/$time-$urlsafe.ipfs.txt
-    curl -sL "http://10.0.0.232/cgi-bin/ipfsapi/v0_edit_mpc/add?file=$basepath/$time-$urlsafe.txt&rawleaves=true" >> $basepath/$time-$urlsafe.ipfs.txt
-    curl -sL "http://10.0.0.232/cgi-bin/ipfsapi/v0_edit_mpc/add?file=$basepath/$time-$urlsafe-meta.warc.gz&rawleaves=true" >> $basepath/$time-$urlsafe.ipfs.txt
-    curl -sL "http://10.0.0.232/cgi-bin/ipfsapi/v0_edit_mpc/add?file=$basepath/$time-$urlsafe.cdx&rawleaves=true" >> $basepath/$time-$urlsafe.ipfs.txt
+    json1=$basepath/$time-$urlsafe.ipfs.txt
+    echo "[" >> $json1
+    curl -sL "http://10.0.0.232/cgi-bin/ipfsapi/v0_edit_mpc/add?file=$basepath/$time-$urlsafe-00000.warc.gz&rawleaves=true" | tr -d \\n >> $json1; echo , >> $json1
+    curl -sL "http://10.0.0.232/cgi-bin/ipfsapi/v0_edit_mpc/add?file=$basepath/$time-$urlsafe.txt&rawleaves=true" | tr -d \\n >> $json1; echo , >> $json1
+    curl -sL "http://10.0.0.232/cgi-bin/ipfsapi/v0_edit_mpc/add?file=$basepath/$time-$urlsafe-meta.warc.gz&rawleaves=true" | tr -d \\n >> $json1; echo , >> $json1
+    curl -sL "http://10.0.0.232/cgi-bin/ipfsapi/v0_edit_mpc/add?file=$basepath/$time-$urlsafe.cdx&rawleaves=true" >> $json1
+    echo "]" >> $json1
     curl -sL "http://10.0.0.232/cgi-bin/ipfsapi/v0_edit_mpc/add?file=$basepath/$time-$urlsafe.ipfs.txt&rawleaves=true" > $basepath/$time-$urlsafe.ipfs.set.txt; cat $basepath/$time-$urlsafe.ipfs.set.txt; echo
 
     echo "Which CONTAINS:"
@@ -41,8 +44,8 @@ else
 
     echo "Which are these 5 CIDs:"
     maincid=$(cat $basepath/$time-$urlsafe.ipfs.set.txt | jq .Hash | sed "s/\"//g")
-    subcids=$(cat $basepath/$time-$urlsafe.ipfs.txt | jq .Hash | sed "s/\"//g" | perl -pE "s/\n/ /g")
-    echo $maincid.$(echo $subcids | sed "s/ /#/g"); echo
+    subcids=$(cat $json1 | jq .[].Hash | sed "s/\"//g" | perl -pE "s/\n/ /g")
+    echo $maincid"#"$(echo $subcids | sed "s/ /#/g"); echo
 
     echo "== Copying to HPC =="; echo
     echo $maincid $subcids | tr -d \\n | xargs -d " " sh -c 'for args do TZ=UTC wget -O/dev/null http://10.0.0.232/cgi-bin/ipfsapi/v0/dag/export?arg=$args 2>&1; done' _
