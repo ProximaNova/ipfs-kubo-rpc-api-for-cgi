@@ -9,7 +9,7 @@ if [ $pidcount -gt 5 ]; then
 else
     url="$(echo -n "$REQUEST_URI" | sed "s/.*?url=//g")"
     basepath="/zc/put/cunt/warc"
-    time="$(date +%s)"
+    time="$(TZ=UTC date -u +%Y%m%d%H%M%S)"
     urlsafe=$(echo "$url" | sed "s/:\|\/\|?\|=\|&\|(\|)\|,\|+\|*\|%\|#/-/g")
     urllen=$(echo -n $time-$urlsafe | wc --bytes)
     if [ $urllen -gt 200 ]; then
@@ -51,5 +51,5 @@ else
     echo $maincid $subcids | tr -d \\n | xargs -d " " sh -c 'for args do TZ=UTC wget -O/dev/null http://10.0.0.232/cgi-bin/ipfsapi/v0/dag/export?arg=$args 2>&1; done' _
 
     echo "== First 90K if HTML =="; echo
-    zcat $basepath/$time-$urlsafe-00000.warc.gz | grep -A999999999999 "<html" | head -c90100
+    zcat $basepath/$time-$urlsafe-00000.warc.gz | grep -ai -A999999999999 "<html" | head -c90100
 fi
