@@ -1,7 +1,7 @@
 #!/bin/bash
 echo "Content-type: text/plain"
 echo
-url="$(echo -n "$REQUEST_URI" | sed "s/.*?url=//g")"
+url="$(echo -n "$REQUEST_URI" | sed "s/^\/cgi-bin\/urlon.sh?url=//g")"
 echo "Yes do it" > /zc/put/cunt/selenium/run1
 echo "$url" > /zc/put/cunt/selenium/run2
 echo "URL: $url"
