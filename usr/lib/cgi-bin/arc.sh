@@ -17,8 +17,8 @@ else
     fi
 
     echo -n "url is: "; echo "$url" | tee $basepath/$time-$urlsafe.txt
-    echo "urlsafe:$urlsafe"
-    echo "time is:$time"; echo
+    echo "urlsafe: $urlsafe"
+    echo "time is: $time"; echo
 
     echo "Main CID:"
 #-- wget, recursive:
@@ -32,12 +32,12 @@ else
 
     json1=$basepath/$time-$urlsafe.ipfs.txt
     echo "[" >> $json1
-    curl -sL "http://10.0.0.232/cgi-bin/ipfsapi/v0_edit_mpc/add?file=$basepath/$time-$urlsafe-00000.warc.gz&rawleaves=true" | tr -d \\n >> $json1; echo , >> $json1
-    curl -sL "http://10.0.0.232/cgi-bin/ipfsapi/v0_edit_mpc/add?file=$basepath/$time-$urlsafe.txt&rawleaves=true" | tr -d \\n >> $json1; echo , >> $json1
-    curl -sL "http://10.0.0.232/cgi-bin/ipfsapi/v0_edit_mpc/add?file=$basepath/$time-$urlsafe-meta.warc.gz&rawleaves=true" | tr -d \\n >> $json1; echo , >> $json1
-    curl -sL "http://10.0.0.232/cgi-bin/ipfsapi/v0_edit_mpc/add?file=$basepath/$time-$urlsafe.cdx&rawleaves=true" >> $json1
+    curl -sL "http://10.0.0.231/cgi-bin/ipfsapi/v0_edit_mpc/add?file=$basepath/$time-$urlsafe-00000.warc.gz&rawleaves=true" | tr -d \\n >> $json1; echo , >> $json1
+    curl -sL "http://10.0.0.231/cgi-bin/ipfsapi/v0_edit_mpc/add?file=$basepath/$time-$urlsafe.txt&rawleaves=true" | tr -d \\n >> $json1; echo , >> $json1
+    curl -sL "http://10.0.0.231/cgi-bin/ipfsapi/v0_edit_mpc/add?file=$basepath/$time-$urlsafe-meta.warc.gz&rawleaves=true" | tr -d \\n >> $json1; echo , >> $json1
+    curl -sL "http://10.0.0.231/cgi-bin/ipfsapi/v0_edit_mpc/add?file=$basepath/$time-$urlsafe.cdx&rawleaves=true" >> $json1
     echo "]" >> $json1
-    curl -sL "http://10.0.0.232/cgi-bin/ipfsapi/v0_edit_mpc/add?file=$basepath/$time-$urlsafe.ipfs.txt&rawleaves=true" > $basepath/$time-$urlsafe.ipfs.set.txt; cat $basepath/$time-$urlsafe.ipfs.set.txt; echo
+    curl -sL "http://10.0.0.231/cgi-bin/ipfsapi/v0_edit_mpc/add?file=$basepath/$time-$urlsafe.ipfs.txt&rawleaves=true" > $basepath/$time-$urlsafe.ipfs.set.txt; cat $basepath/$time-$urlsafe.ipfs.set.txt; echo
 
     echo "Which CONTAINS:"
     cat $basepath/$time-$urlsafe.ipfs.txt; echo
@@ -48,7 +48,7 @@ else
     echo $maincid"#"$(echo $subcids | sed "s/ /#/g"); echo
 
     echo "== Copying to HPC =="; echo
-    echo $maincid $subcids | tr -d \\n | xargs -d " " sh -c 'for args do TZ=UTC wget -O/dev/null http://10.0.0.232/cgi-bin/ipfsapi/v0/dag/export?arg=$args 2>&1; done' _
+    echo $maincid $subcids | tr -d \\n | xargs -d " " sh -c 'for args do TZ=UTC wget -O/dev/null http://10.0.0.231/cgi-bin/ipfsapi/v0/dag/export?arg=$args 2>&1; done' _
 
     echo "== First 90K if HTML =="; echo
     zcat $basepath/$time-$urlsafe-00000.warc.gz | grep -ai -A999999999999 "<html" | head -c90100
