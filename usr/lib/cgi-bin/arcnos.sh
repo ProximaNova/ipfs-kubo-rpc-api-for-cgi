@@ -2,6 +2,7 @@
 echo "Content-type: text/plain"
 echo
 # Not spanning hosts
+localip="10.0.0.231"
 pidcount=$(ps -ef | grep -v grep | grep arcnos.sh | wc -l)
 if [ $pidcount -gt 5 ]; then
     echo "Too many arcnos.sh PID(s) detected. Try again later. PID(s):"
@@ -11,7 +12,7 @@ else
     url="$(echo -n "$REQUEST_URI" | sed "s/.*?url=//g")"
     basepath="/zc/put/cunt/warc"
     time="$(TZ=UTC date -u +%Y%m%d%H%M%S)"
-    urlsafe=$(echo "$url" | sed "s/:\|\/\|?\|=\|&\|(\|)\|,\|+\|*\|%\|#/-/g")
+    urlsafe=$(echo "$url" | sed "s/:\|\/\|?\|=\|&\|(\|)\|,\|+\|*\|%\|#\|@/-/g")
     urllen=$(echo -n $time-$urlsafe | wc --bytes)
     if [ $urllen -gt 200 ]; then
         urlsafe="$(echo $urlsafe | perl -pE "s/^(.{200}).*/\1.URL2LONG/g")"
@@ -31,11 +32,11 @@ else
 #-- lynx:
 #-- ...
 
-    curl -sL "http://10.0.0.232/cgi-bin/ipfsapi/v0_edit_mpc/add?file=$basepath/$time-$urlsafe-00000.warc.gz&rawleaves=true" >> $basepath/$time-$urlsafe.ipfs.txt
-    curl -sL "http://10.0.0.232/cgi-bin/ipfsapi/v0_edit_mpc/add?file=$basepath/$time-$urlsafe.txt&rawleaves=true" >> $basepath/$time-$urlsafe.ipfs.txt
-    curl -sL "http://10.0.0.232/cgi-bin/ipfsapi/v0_edit_mpc/add?file=$basepath/$time-$urlsafe-meta.warc.gz&rawleaves=true" >> $basepath/$time-$urlsafe.ipfs.txt
-    curl -sL "http://10.0.0.232/cgi-bin/ipfsapi/v0_edit_mpc/add?file=$basepath/$time-$urlsafe.cdx&rawleaves=true" >> $basepath/$time-$urlsafe.ipfs.txt
-    curl -sL "http://10.0.0.232/cgi-bin/ipfsapi/v0_edit_mpc/add?file=$basepath/$time-$urlsafe.ipfs.txt&rawleaves=true" > $basepath/$time-$urlsafe.ipfs.set.txt; cat $basepath/$time-$urlsafe.ipfs.set.txt; echo
+    curl -sL "http://$localip/cgi-bin/ipfsapi/v0_edit_mpc/add?file=$basepath/$time-$urlsafe-00000.warc.gz&rawleaves=true" >> $basepath/$time-$urlsafe.ipfs.txt
+    curl -sL "http://$localip/cgi-bin/ipfsapi/v0_edit_mpc/add?file=$basepath/$time-$urlsafe.txt&rawleaves=true" >> $basepath/$time-$urlsafe.ipfs.txt
+    curl -sL "http://$localip/cgi-bin/ipfsapi/v0_edit_mpc/add?file=$basepath/$time-$urlsafe-meta.warc.gz&rawleaves=true" >> $basepath/$time-$urlsafe.ipfs.txt
+    curl -sL "http://$localip/cgi-bin/ipfsapi/v0_edit_mpc/add?file=$basepath/$time-$urlsafe.cdx&rawleaves=true" >> $basepath/$time-$urlsafe.ipfs.txt
+    curl -sL "http://$localip/cgi-bin/ipfsapi/v0_edit_mpc/add?file=$basepath/$time-$urlsafe.ipfs.txt&rawleaves=true" > $basepath/$time-$urlsafe.ipfs.set.txt; cat $basepath/$time-$urlsafe.ipfs.set.txt; echo
 
     echo "Which CONTAINS:"
     cat $basepath/$time-$urlsafe.ipfs.txt; echo
@@ -46,7 +47,7 @@ else
     echo $maincid"#"$(echo $subcids | sed "s/ /#/g"); echo
 
     echo "== Copying to HPC =="; echo
-    echo $maincid $subcids | tr -d \\n | xargs -d " " sh -c 'for args do TZ=UTC wget -O/dev/null http://10.0.0.232/cgi-bin/ipfsapi/v0/dag/export?arg=$args 2>&1; done' _
+    echo $maincid $subcids | tr -d \\n | xargs -d " " sh -c 'for args do TZ=UTC wget -O/dev/null http://$localip/cgi-bin/ipfsapi/v0/dag/export?arg=$args 2>&1; done' _
 
     echo "== First 90K if HTML =="; echo
     zcat $basepath/$time-$urlsafe-00000.warc.gz | grep -ai -A999999999999 "<html" | head -c90100
