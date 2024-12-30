@@ -1,7 +1,7 @@
 #!/bin/bash
 echo "Content-type: text/plain"
 echo
-url="$(echo -n "$REQUEST_URI" | sed "s/^\/cgi-bin\/h206m.sh?url=//g" | sed "s/^%20//g")"
+url="$(echo -n "$REQUEST_URI" | sed "s/^\/cgi-bin\/h206m?url=//g" | sed "s/^%20//g")"
 
 time="$(TZ=UTC date -u +%Y%m%d%H%M%S)"
 urlsafe=$(echo "$url" | sed "s/:\|\/\|?\|=\|&\|(\|)\|,\|+\|*\|%\|#\|@/-/g")
