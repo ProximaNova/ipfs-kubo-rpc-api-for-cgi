@@ -1,8 +1,0 @@
-#!/bin/bash
-echo "Content-type: application/json"
-echo
-arg="$(echo -n "$REQUEST_URI" | sed "s/.*?arg=//g")"
-curl -X POST "http://10.0.0.229:5001/api/v0/routing/provide?arg=$arg&recursive=true"
-# "http://127.0.0.1:5001/api/v0/routing/provide?arg=<key>&verbose=<value>&recursive=<value>"
-
-# This file might get deleted in the future.
