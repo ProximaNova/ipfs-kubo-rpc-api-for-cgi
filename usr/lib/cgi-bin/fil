@@ -1,0 +1,14 @@
+#!/bin/bash
+echo "Content-type: text/plain"
+echo
+id="$(echo -n "$REQUEST_URI" | sed "s/^\/cgi-bin\/fil?id=//g")"
+echo "Is this CID in Filecoin? Answer:"
+bytes="$(lassie fetch -o - $id 2>&1 | head -c350)"
+echo "$bytes" | grep "^no candidates$" 1>/dev/null && echo "No."
+echo "$bytes" | grep "^no candidates$" 1>/dev/null || echo "Yes."
+echo
+echo "Hexdump:"
+echo "$bytes" | xxd
+
+# In Filecoin as of 2024-12-30 02:57 UTC:
+# /ipfs/bafybeic56z3yccnla3cutmvqsn5zy3g24muupcsjtoyp3pu5pm5amurjx4
