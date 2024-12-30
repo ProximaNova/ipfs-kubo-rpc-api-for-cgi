@@ -3,7 +3,7 @@
 # from https://xrvqop.csb.app/ from https://docs.ipfs.tech/concepts/content-addressing/
 echo "Content-type: text/plain"
 echo
-cid="$(echo -n "$REQUEST_URI" | sed "s/.*?id=//g")"
+cid="$(echo -n "$REQUEST_URI" | sed "s/^\/cgi-bin\/cid?id=//g")"
 node /home/u/node/converting-between-cid-versions/index.js $cid
 echo -e "\n----\n\nPercent-encoded:"
 cids=($(node /home/u/node/converting-between-cid-versions/index.js $cid | grep "base\|v1\|v0" | head -n5 | grep -v "CID (v0 byte length)" | sed "s/.* //g" | perl -pE "s/\n/ /g" | sed "s/ $//g"))
