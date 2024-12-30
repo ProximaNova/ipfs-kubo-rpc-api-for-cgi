@@ -1,5 +1,5 @@
 #!/bin/bash
-file="$(echo -n "$REQUEST_URI" | sed "s/.*?f=//g")"
+file="$(echo -n "$REQUEST_URI" | sed "s/^\/cgi-bin\/file?f=//g")"
 nosl="$(echo "$file" | sed "s/.*\///g")"
 echo "Content-type: application/octet-stream"
 echo "Content-Disposition: attachment; filename=\"$nosl\""
