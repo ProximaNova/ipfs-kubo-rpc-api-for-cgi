@@ -9,7 +9,7 @@ eval $(echo "$url" | awk -F'[=&?]' '{print $6}')=$(echo "$url" | awk -F'[=&?]' '
 if [ ! -z $verbose ]; then verbose_="&verbose=$verbose"; fi
 if [ ! -z $recursive ]; then recursive_="&recursive=$recursive"; fi
 
-curl -X POST "http://10.0.0.229:5001/api/v0/routing/provide?arg=$arg$verbose_$recursive_"
+curl -k -X POST "https://10.0.0.229:5001/api/v0/routing/provide?arg=$arg$verbose_$recursive_"
 
 # arg [string]: The key[s] to send provide records for. Required: yes.
 # verbose [bool]: Print extra information. Required: no.
