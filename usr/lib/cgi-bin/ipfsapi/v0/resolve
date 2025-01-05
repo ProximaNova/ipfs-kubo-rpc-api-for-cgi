@@ -1,0 +1,22 @@
+#!/bin/bash
+echo "Content-type: application/json"
+echo; url="$REQUEST_URI"
+
+eval $(echo "$url" | awk -F'[=&?]' '{print $2}')=$(echo "$url" | awk -F'[=&?]' '{print $3}')
+eval $(echo "$url" | awk -F'[=&?]' '{print $4}')=$(echo "$url" | awk -F'[=&?]' '{print $5}')
+eval $(echo "$url" | awk -F'[=&?]' '{print $6}')=$(echo "$url" | awk -F'[=&?]' '{print $7}')
+eval $(echo "$url" | awk -F'[=&?]' '{print $8}')=$(echo "$url" | awk -F'[=&?]' '{print $9}')
+
+if [ ! -z $recursive ]; then recursive_="&recursive=$recursive"; fi
+if [ ! -z $dhtrecordcount ]; then dhtrecordcount_="&dht-record-count=$dhtrecordcount"; fi
+if [ ! -z $dhttimeout ]; then dhttimeout_="&dht-timeout=$dhttimeout"; fi
+
+curl -k -X POST "https://10.0.0.229:5001/api/v0/resolve?arg=$arg$recursive_$dhtrecordcount_$dhttimeout_"
+
+# arg [string]: The name to resolve. Required: yes.
+# recursive [bool]: Resolve until the result is an IPFS name. Default: true. Required: no.
+# dht-record-count [int]: Number of records to request for DHT resolution. Required: no.
+# dht-timeout [string]: Max time to collect values during DHT resolution e.g. "30s". Pass 0 for no timeout. Required: no.
+
+# PROBLEM: Bash variable with hyphen. They cannot contain any hyphen
+# RENAMED URL var: dht-record-count->dhtrecordcount, dht-timeout->dhttimeout
