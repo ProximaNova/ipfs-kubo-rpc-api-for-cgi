@@ -2,5 +2,5 @@
 echo "Content-type: text/plain"
 echo
 localip="10.0.0.232"
-id="$(curl -sLk https://10.0.0.232/cgi-bin/resh?id=$(echo -n "$REQUEST_URI" | sed "s/^\/cgi-bin\/tailph?id=//g"))"
+id="$(curl -sLk https://$localip/cgi-bin/resh?id=$(echo -n "$REQUEST_URI" | sed "s/^\/cgi-bin\/tailph?id=//g"))"
 curl -sLk "https://$localip/cgi-bin/tail?url=https://$localip/cgi-bin/ipfsapi/v0/routing/provide?arg=$id"
