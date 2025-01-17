@@ -1,0 +1,125 @@
+#docs/slax_init.txt
+ctrl+alt+f1 [...]
+ssh root@10.0.0.229
+echo -ne "\033[9;5]" > /dev/tty1
+apt-get install openssh-server vlock tint sudo -y # this should also install openssh-client
+adduser guest sudo
+passwd guest
+su guest
+sudo apt install vim xxd lynx curl htop screen nginx bc tor torsocks -y
+ssh-keygen -t ed25519
+cat ~/.ssh/id_ed25519.pub # use the output of this as the contents of $Nonce1
+exit
+exit
+ssh-copy-id guest@10.0.0.229
+echo "$Nonce1" >> ~/.ssh/authorized_keys
+ssh guest@10.0.0.229
+ssh-copy-id u@10.0.0.232
+
+# start https://gateway.pinata.cloud/ipfs/QmWBpEJHARRef2JcdPjCqfZoAUFHiiZVn9YCj3fjXDYeSs in low-powered mode ("--profile=lowpower")
+# by running:
+TZ=UTC wget -qO- https://dist.ipfs.tech/kubo/v0.32.0/kubo_v0.32.0_linux-386.tar.gz | zcat > kubo_v0.30.0_linux-386.tar; tar -xf kubo*; rm *.tar; cd kubo; sudo ./install.sh; ipfs init --profile=lowpower; echo /ipns/dist.ipfs.tech/kubo/v0.32.0/kubo_v0.32.0_linux-386.tar.gz | ipfs add -QH
+
+# long version = "ipfs pin ls --type=recursive; ipfs files ls /a; ..."
+# go to the other computer and copy public and private key (was/is in /zc/b/z7/config) to ~/.ipfs/config
+# use that one PeerID+PrivKey
+# skip: HDD died - sudo mkdir /mnt/z7
+# skip: HDD died - sudo umount /media/lubuntu/ae3251f4-9619-4429-b246-91e03cb68466
+# skip: HDD died - sudo mount /dev/sdc1 /mnt/z7
+# skip: HDD died - export IPFS_PATH=/mnt/z7; ipfs swarm peers | wc -l; ipfs stats bw; ps aux | grep ipfs | grep -v grep | grep ipfs; ls ~/Downloads | grep +; ps -o etime $(ps aux | grep "ipfs daemon" | grep -v grep | awk '{print $2}'); df --block-size=1 /mnt/z7; df -h /mnt/z7
+# skipped
+ipfs swarm peers | wc -l; ipfs stats bw; ps aux | grep ipfs | grep -v grep | grep ipfs; ps -o etime $(ps aux | grep "ipfs daemon" | grep -v grep | awk '{print $2}'); df --block-size=1 /; df -h /
+ipfs config --json API.HTTPHeaders.Access-Control-Allow-Origin '["https://10.0.0.229:5001", "http://localhost:3000", "http://127.0.0.1:5001", "https://webui.ipfs.io"]'
+ipfs config --json API.HTTPHeaders.Access-Control-Allow-Methods '["PUT", "POST", "GET"]'
+
+# start IPFS
+ipfs daemon & disown; sleep 9; ipfs --timeout=60s resolve /ipns/k51qzi5uqu5diwzufekv38cynmdqlh0lwic1ve0d9w5a0glpy52qjc0l77h4t5; mfsroot=$(ssh u@10.0.0.232 "export IPFS_PATH=/zc/ipfs; ipfs files stat / | head -n1"); date -u; ipfs name publish $mfsroot; date -u; ipfs ls /ipns/k51qzi5uqu5diwzufekv38cynmdqlh0lwic1ve0d9w5a0glpy52qjc0l77h4t5
+
+# Try to prevent thermal shutdowns
+sudo su # login as root to change this # sudo sed -i "s/\/root:\/usr\/sbin\/nologin/\/root:\/bin\/bash/g" /etc/passwd
+# 0.90 for 90%:
+p=0.85
+# CPU0 throttled:
+cpu0=/sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq; cpumax=$(cat $cpu0); throttle=$(echo $cpumax \* $p | bc -l | sed "s/\..*//g"); echo $cpumax; echo $throttle; sudo echo $throttle > $cpu0
+# CPU1 throttled:
+cpu1=/sys/devices/system/cpu/cpu1/cpufreq/scaling_max_freq; cpumax=$(cat $cpu1); throttle=$(echo $cpumax \* $p | bc -l | sed "s/\..*//g"); echo $cpumax; echo $throttle; sudo echo $throttle > $cpu1
+# CPU2 throttled:
+cpu2=/sys/devices/system/cpu/cpu2/cpufreq/scaling_max_freq; cpumax=$(cat $cpu2); throttle=$(echo $cpumax \* $p | bc -l | sed "s/\..*//g"); echo $cpumax; echo $throttle; sudo echo $throttle > $cpu2
+# CPU3 throttled:
+cpu3=/sys/devices/system/cpu/cpu3/cpufreq/scaling_max_freq; cpumax=$(cat $cpu3); throttle=$(echo $cpumax \* $p | bc -l | sed "s/\..*//g"); echo $cpumax; echo $throttle; sudo echo $throttle > $cpu3
+exit
+
+# /start Don't run this in GNU Screen or over ssh:
+sudo apt update
+grep security /etc/apt/sources.list | sudo tee /etc/apt/security.sources.list
+sudo apt-get upgrade -o Dir::Etc::SourceList=/etc/apt/security.sources.list -y & disown
+# /end
+
+# nginx config - was/is detailed by /zc/b/etc-nginx/conf.d-ipfs.conf:
+sudo openssl req -x509 -nodes -days 1001 -newkey rsa:2048 -keyout /etc/ssl/private/ssigned.key -out /etc/ssl/private/ssigned.crt
+sudo vim /etc/nginx/conf.d/ipfs.conf
+sudo systemctl restart nginx
+
+# tor config - was/is detailed by /zc/b/hpc-var-lib-tor/ and /zc/b/etc-tor/
+sudo vim /etc/tor/torrc
+# add: HiddenServiceDir /var/lib/tor/site/
+# add: HiddenServicePort 80 127.0.0.1:8080
+sudo mkdir /var/lib/tor/site
+sudo su
+cd /var/lib/tor/site
+[...]
+cat /var/lib/tor/site/temp | xxd -ps -r | tee /var/lib/tor/site/hs_ed25519_public_key 1>/dev/null
+[...]
+cat /var/lib/tor/site/temp | xxd -ps -r | tee /var/lib/tor/site/hs_ed25519_secret_key 1>/dev/null
+rm /var/lib/tor/site/temp; vim /var/lib/tor/site/hostname
+mkdir /var/lib/tor/site/authorized_clients
+chown debian-tor /var/lib/tor/site
+chown debian-tor /var/lib/tor/site/hostname
+chown debian-tor /var/lib/tor/site/hs_ed25519_public_key
+chown debian-tor /var/lib/tor/site/hs_ed25519_secret_key
+chown debian-tor /var/lib/tor/site/authorized_clients
+chmod 2700 /var/lib/tor/site/authorized_clients
+chmod 2700 /var/lib/tor/site
+chmod 600 /var/lib/tor/site/hostname
+chmod 600 /var/lib/tor/site/hs_ed25519_public_key
+chmod 600 /var/lib/tor/site/hs_ed25519_secret_key
+exit
+sudo systemctl restart tor
+sudo sed -i "s/\/root:\/bin\/bash/\/root:\/usr\/sbin\/nologin/g" /etc/passwd
+
+# IPFS info, enable ifconfig, fix IP
+jobs -l; utc; ipfs swarm peers | wc -l; ipfs stats bw; utc; ssh guest@10.0.0.229 "echo ====; echo -n 'files: '; find ~/.ipfs/blocks/ -type f -name *.data | wc -l; ipfs swarm peers | wc -l; ipfs stats bw; df -h /"; utc
+vim ~/.bashrc
+# add:
+# export PATH=$PATH:/usr/sbin
+# alias utc="date -u +%Y-%m-%dT%H:%M:%S.%NZ"
+# alias l='ls -CF'
+# alias ws="wget --spider --no-check-certificate"
+aa() { sudo ip addr del 10.0.0.212/24 dev wlo1; sudo ip addr add 10.0.0.229/24 dev wlo1; } # or whatever IP address which isn't 10.0.0.229
+aa & disown
+# kill $sshPID # to exit
+ssh-keygen -f "/home/u/.ssh/known_hosts" -R "10.0.0.229"
+
+# Only allow key-based auth
+sudo vim /etc/ssh/sshd_config
+# uncomment/change to:
+# PubkeyAuthentication yes
+# PasswordAuthentication no
+sudo systemctl restart sshd
+
+# After changing the IP address, check if Internet access is working. Problem: function add, and adding default thing only fixes it for a day or two then it goes back to 10.0.0.[not 229]
+ping google.com
+# maybe:    sudo ifconfig wlo1 10.0.0.229 netmask 255.0.0.0 broadcast 10.255.255.255
+# or maybe: sudo ifconfig wlo1 10.0.0.229 netmask 255.255.255.0 broadcast 0.0.0.0
+sudo ip route add default via 10.0.0.1 # IP address of router = 10.0.0.1
+sudo systemctl restart tor
+
+# In TTY, change volume to 70% of max volume
+amixer sset Master 70%
+exit
+
+# Edit crontab, add a thing to delete all files in ~/.ipfs/ every 24 hours
+crontab
+...
+
+# Idea: save /etc/ssl/private/ssigned.key /etc/ssl/private/ssigned.crt and SSH keys to somewhere in /zc/b/
