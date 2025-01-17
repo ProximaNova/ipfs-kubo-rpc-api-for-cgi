@@ -1,6 +1,7 @@
 #!/bin/bash
 echo "Content-type: text/plain"
 echo
+# Works with plain URLs, not those containing "?", so /[a-zA-Z0-9]/, ".", and "/"
 localip="10.0.0.232"
 pidcount=$(ps -ef | grep -v grep | grep "mem " | wc -l)
 if [ $pidcount -gt 5 ]; then
@@ -18,14 +19,19 @@ else
         urlsafe="$(echo $urlsafe | perl -pE "s/^(.{200}).*/\1.URL2LONG/g")"
     fi
 
-    echo -n "url is: "; echo "$url" | tee $basepath/$time-$urlsafe.txt
+    mkdir $basepath/../memento/$timeu
+    echo -n "url is: "; echo "$url" | tee $basepath/../memento/$timeu/$time-$urlsafe.txt
     echo "urlsafe: $urlsafe"
     echo "time is: $time, $timeu"; echo
 
     echo "Main CID at the bottom:"
-    cd $basepath; TZ=UTC wget --no-check-certificate -p --span-hosts --adjust-extension --convert-links --restrict-file-names=windows --warc-max-size=99123456 --warc-cdx -e robots=off --warc-file=$basepath/$time-$urlsafe --directory-prefix=$basepath/../memento/$timeu/memento/$time/ "$url" 2>/dev/null
+    cd $basepath; TZ=UTC wget --no-check-certificate -p --span-hosts --adjust-extension --convert-links --restrict-file-names=windows --warc-max-size=99123456 --warc-cdx -e robots=off --warc-file=$basepath/../memento/$timeu/$time-$urlsafe --directory-prefix=$basepath/../memento/$timeu/memento/$time/ "$url" 2>/dev/null
     urlpath=$(echo $url | sed "s/^https\?:\/\///g")
-    mv -n "$basepath/../memento/$timeu/memento/$time/${urlpath}.html" "$basepath/../memento/$timeu/memento/$time/${urlpath}"
+
+#   if [[ ! "$str" =~ index\.html$ ]]; then echo move; fi
+#   / = // in path///index.html or path/index.html
+    stat -t "$basepath/../memento/$timeu/memento/$time/${urlpath}/index.html" 1>/dev/null 2>/dev/null || mv -n "$basepath/../memento/$timeu/memento/$time/${urlpath}.html" "$basepath/../memento/$timeu/memento/$time/${urlpath}"
+
     filesf() { basedir="$basepath/../memento/$timeu"; basedirlen=$(expr $(echo -n "$basedir" | wc --bytes) + 1); find "$basedir" -type f | basedirlen="$basedirlen" xargs -d "\n" sh -c 'for args do nobasedir=$(echo "$args" | sed -E "s/^.{$basedirlen}//g"); echo " -F "file=@"\"$args\";filename=\"$nobasedir\"" | tr -d \\n; done' _; }
     curl -k -X POST -H "Content-Type: multipart/form-data" $(filesf) "https://$localip:5001/api/v0/add?cid-version=1&chunker=size-1048576&recursive=true&wrap-with-directory=true&pin=false"
 fi
