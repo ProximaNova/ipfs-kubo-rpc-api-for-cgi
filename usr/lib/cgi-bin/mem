@@ -35,3 +35,6 @@ else
     filesf() { basedir="$basepath/../memento/$timeu"; basedirlen=$(expr $(echo -n "$basedir" | wc --bytes) + 1); find "$basedir" -type f | basedirlen="$basedirlen" xargs -d "\n" sh -c 'for args do nobasedir=$(echo "$args" | sed -E "s/^.{$basedirlen}//g"); echo " -F "file=@"\"$args\";filename=\"$nobasedir\"" | tr -d \\n; done' _; }
     curl -k -X POST -H "Content-Type: multipart/form-data" $(filesf) "https://$localip:5001/api/v0/add?cid-version=1&chunker=size-1048576&recursive=true&wrap-with-directory=true&pin=false"
 fi
+
+# bug at https://10.0.0.232/cgi-bin/mem?url=https://archive.org/details/123 = archive.org has many files (CSS/JS/font slop) so the curl command fails. wget and curl works fine if wget -p grabbed not too many files.
+# idea: make it work with .onion links too
