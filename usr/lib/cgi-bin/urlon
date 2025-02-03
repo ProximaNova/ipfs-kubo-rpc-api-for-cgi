@@ -1,7 +1,8 @@
 #!/bin/bash
 echo "Content-type: text/plain"
 echo
+basepath="/zd/put/cunt/selenium"
 url="$(echo -n "$REQUEST_URI" | sed "s/^\/cgi-bin\/urlon?url=//g")"
-echo "Yes do it" > /zc/put/cunt/selenium/run1
-echo "$url" > /zc/put/cunt/selenium/run2
+echo "Yes do it" > "$basepath/run1"
+echo "$url" > "$basepath/run2"
 echo "URL: $url"
