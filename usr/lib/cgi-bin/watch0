@@ -1,0 +1,9 @@
+#!/bin/bash
+echo "Content-type: text/html"
+echo
+basepath="/zd/put/cunt"
+echo "<pre>"
+v=$(echo -n $REQUEST_URI | sed "s/^\/cgi-bin\/watch0?v=//g" | sed "s/&.*//g")
+# H264, so not entirely "zero"
+yt-dlp "$v" -S "codec:h264" --restrict-filenames --windows-filenames -o "$basepath/%(title)s-%(channel)s-%(upload_date)s-%(extractor)s-%(resolution)s-%(id)s.%(ext)s"
+echo "</pre>"
