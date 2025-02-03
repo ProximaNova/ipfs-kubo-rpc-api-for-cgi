@@ -2,4 +2,8 @@
 echo "Content-type: text/plain"
 echo
 url="$(echo -n "$REQUEST_URI" | sed "s/^\/cgi-bin\/tail?url=//g")"
-curl -sLk "$url" | tail -c 160 | xxd
+urldecode=$(urlencode -d "$(echo "$url")")
+curl -sLk "$urldecode" | tail -c 360 | xxd -c 25
+# previously:
+#curl -sLk "$url" | tail -c 360 | xxd -c 25
+# note: urlencode from gridsite-clients sucks
