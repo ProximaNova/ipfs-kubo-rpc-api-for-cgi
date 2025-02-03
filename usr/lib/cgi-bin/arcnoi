@@ -2,14 +2,14 @@
 echo "Content-type: text/plain"
 echo
 localip="10.0.0.232"
-pidcount=$(ps -ef | grep -v grep | grep "arc " | wc -l)
+basepath="/zd/put/cunt/warc"
+pidcount=$(ps -ef | grep -v grep | grep "arcnoi " | wc -l)
 if [ $pidcount -gt 5 ]; then
     echo "Too many arc PID(s) detected. Try again later. PID(s):"
-    ps -ef | grep -v grep | grep "arc " | grep -n $
+    ps -ef | grep -v grep | grep "arcnoi " | grep -n $
     exit 0
 else
     url="$(echo -n "$REQUEST_URI" | sed "s/^\/cgi-bin\/arcnoi?url=//g")"
-    basepath="/zc/put/cunt/warc"
     time="$(TZ=UTC date -u +%Y%m%d%H%M%S)"
     urlsafe=$(echo "$url" | sed "s/:\|\/\|?\|=\|&\|(\|)\|,\|@\|+\|*\|%\|#/-/g")
     urllen=$(echo -n $time-$urlsafe | wc --bytes)
@@ -24,8 +24,8 @@ else
 #-- wget, recursive:
 #TZ=UTC wget --no-check-certificate -pr --adjust-extension --convert-links --restrict-file-names=windows --warc-max-size=99123456 --warc-cdx -e robots=off --warc-file=$basepath/$time "$url" 1>$basepath/wget$time.txt 2>$basepath/wget$time.txt
     #-- wget, not recursive:
-    cd $basepath; TZ=UTC wget --no-check-certificate -p --span-hosts --adjust-extension --convert-links --restrict-file-names=windows --warc-max-size=99123456 --warc-cdx -e robots=off --warc-file=$basepath/$time-$urlsafe --directory-prefix=$basepath/memento/$time/ "$url" 2>/dev/null #2> is saved to meta warc
+    cd $basepath; TZ=UTC wget --no-check-certificate -p --span-hosts --adjust-extension --convert-links --restrict-file-names=windows --warc-max-size=99123456 --warc-cdx -e robots=off --warc-file=$basepath/$time-$urlsafe "$url" 2>/dev/null #2> is saved to meta warc
 
-    echo "== First 90K if HTML =="; echo
-    zcat $basepath/$time-$urlsafe-00000.warc.gz | grep -ai -A999999999999 "<html" | head -c90100
+#    echo "== First 90K if HTML =="; echo
+#    zcat $basepath/$time-$urlsafe-00000.warc.gz | grep -ai -A999999999999 "<html" | head -c90100
 fi
