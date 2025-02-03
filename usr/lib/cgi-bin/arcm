@@ -1,0 +1,57 @@
+#!/bin/bash
+echo "Content-type: text/plain"
+echo
+# Delete this file?
+localip="10.0.0.232"
+basepath="/zd/put/cunt/warc"
+pidcount=$(ps -ef | grep -v grep | grep "arcm " | wc -l)
+if [ $pidcount -gt 5 ]; then
+    echo "Too many arc PID(s) detected. Try again later. PID(s):"
+    ps -ef | grep -v grep | grep "arcm " | grep -n $
+    exit 0
+else
+    url="$(echo -n "$REQUEST_URI" | sed "s/^\/cgi-bin\/arcm?url=//g")"
+    time="$(TZ=UTC date -u +%Y%m%d%H%M%S)"
+    urlsafe=$(echo "$url" | sed "s/:\|\/\|?\|=\|&\|(\|)\|,\|@\|+\|*\|%\|#/-/g")
+    urllen=$(echo -n $time-$urlsafe | wc --bytes)
+    if [ $urllen -gt 200 ]; then
+        urlsafe="$(echo $urlsafe | perl -pE "s/^(.{200}).*/\1.URL2LONG/g")"
+    fi
+
+    echo -n "url is: "; echo "$url" | tee $basepath/$time-$urlsafe.txt
+    echo "urlsafe: $urlsafe"
+    echo "time is: $time"; echo
+
+    echo "Main CID:"
+#-- wget, recursive:
+#TZ=UTC wget --no-check-certificate -pr --adjust-extension --convert-links --restrict-file-names=windows --warc-max-size=99123456 --warc-cdx -e robots=off --warc-file=$basepath/$time "$url" 1>$basepath/wget$time.txt 2>$basepath/wget$time.txt
+    #-- wget, not recursive:
+    cd $basepath; TZ=UTC wget --no-check-certificate -p --span-hosts --adjust-extension --convert-links --restrict-file-names=windows --warc-max-size=99123456 --warc-cdx -e robots=off --warc-file=$basepath/$time-$urlsafe --directory-prefix=$basepath/memento/$time/ "$url" 2>/dev/null #2> is saved to meta warc
+#-- grab-site:
+#-- ...
+#-- lynx:
+#-- ...
+
+    json1=$basepath/$time-$urlsafe.ipfs.txt
+    echo "[" >> $json1
+    curl -sLk "https://$localip/cgi-bin/ipfsapi/v0_edit_mpc/add?file=$basepath/$time-$urlsafe-00000.warc.gz&rawleaves=true" | tr -d \\n >> $json1; echo , >> $json1
+    curl -sLk "https://$localip/cgi-bin/ipfsapi/v0_edit_mpc/add?file=$basepath/$time-$urlsafe.txt&rawleaves=true" | tr -d \\n >> $json1; echo , >> $json1
+    curl -sLk "https://$localip/cgi-bin/ipfsapi/v0_edit_mpc/add?file=$basepath/$time-$urlsafe-meta.warc.gz&rawleaves=true" | tr -d \\n >> $json1; echo , >> $json1
+    curl -sLk "https://$localip/cgi-bin/ipfsapi/v0_edit_mpc/add?file=$basepath/$time-$urlsafe.cdx&rawleaves=true" >> $json1
+    echo "]" >> $json1
+    curl -sLk "https://$localip/cgi-bin/ipfsapi/v0_edit_mpc/add?file=$basepath/$time-$urlsafe.ipfs.txt&rawleaves=true" > $basepath/$time-$urlsafe.ipfs.set.txt; cat $basepath/$time-$urlsafe.ipfs.set.txt; echo
+
+    echo "Which CONTAINS:"
+    cat $basepath/$time-$urlsafe.ipfs.txt; echo
+
+    echo "Which are these 5 CIDs:"
+    maincid=$(cat $basepath/$time-$urlsafe.ipfs.set.txt | jq .Hash | sed "s/\"//g")
+    subcids=$(cat $json1 | jq .[].Hash | sed "s/\"//g" | perl -pE "s/\n/ /g")
+    echo $maincid"#"$(echo $subcids | sed "s/ /#/g"); echo
+
+    echo "== Copying to HPC =="; echo
+    echo $maincid $subcids | tr -d \\n | localip="$localip" xargs -d " " sh -c 'for args do TZ=UTC wget --no-check-certificate -O/dev/null https://$localip/cgi-bin/ipfsapi/v0/dag/export?arg=$args 2>&1; done' _
+
+    echo "== First 90K if HTML =="; echo
+    zcat $basepath/$time-$urlsafe-00000.warc.gz | grep -ai -A999999999999 "<html" | head -c90100
+fi
