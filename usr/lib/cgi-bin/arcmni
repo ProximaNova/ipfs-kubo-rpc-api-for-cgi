@@ -1,0 +1,26 @@
+#!/bin/bash
+echo "Content-type: text/plain"
+echo
+localip="10.0.0.232"
+basepath="/zd/put/cunt/warc"
+pidcount=$(ps -ef | grep -v grep | grep "arcmni " | wc -l)
+if [ $pidcount -gt 5 ]; then
+    echo "Too many arc PID(s) detected. Try again later. PID(s):"
+    ps -ef | grep -v grep | grep "arcmni " | grep -n $
+    exit 0
+else
+    url="$(echo -n "$REQUEST_URI" | sed "s/^\/cgi-bin\/arcmni?url=//g")"
+    time="$(TZ=UTC date -u +%Y%m%d%H%M%S)"
+    urlsafe=$(echo "$url" | sed "s/:\|\/\|?\|=\|&\|(\|)\|,\|@\|+\|*\|%\|#/-/g")
+    urllen=$(echo -n $time-$urlsafe | wc --bytes)
+    if [ $urllen -gt 200 ]; then
+        urlsafe="$(echo $urlsafe | perl -pE "s/^(.{200}).*/\1.URL2LONG/g")"
+    fi
+
+    echo -n "url is: "; echo "$url" | tee $basepath/$time-$urlsafe.txt
+#    echo "urlsafe: $urlsafe"
+#    echo "time is: $time"; echo
+
+    cd $basepath; TZ=UTC wget --no-check-certificate -p --span-hosts --adjust-extension --convert-links --restrict-file-names=windows --warc-max-size=99123456 --warc-cdx -e robots=off --warc-file=$basepath/$time-$urlsafe --directory-prefix=$basepath/memento/$time/ "$url" 2>/dev/null #2> is saved to meta warc
+
+fi
