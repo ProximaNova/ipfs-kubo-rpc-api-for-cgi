@@ -3,14 +3,14 @@ echo "Content-type: text/plain"
 echo
 # Not spanning hosts
 localip="10.0.0.232"
-pidcount=$(ps -ef | grep -v grep | grep arcnos.sh | wc -l)
+basepath="/zd/put/cunt/warc"
+pidcount=$(ps -ef | grep -v grep | grep "arcnos " | wc -l)
 if [ $pidcount -gt 5 ]; then
     echo "Too many arcnos PID(s) detected. Try again later. PID(s):"
-    ps -ef | grep -v grep | grep arcnos | grep -n $
+    ps -ef | grep -v grep | grep "arcnos " | grep -n $
     exit 0
 else
     url="$(echo -n "$REQUEST_URI" | sed "s/^\/cgi-bin\/arcnos?url=//g")"
-    basepath="/zc/put/cunt/warc"
     time="$(TZ=UTC date -u +%Y%m%d%H%M%S)"
     urlsafe=$(echo "$url" | sed "s/:\|\/\|?\|=\|&\|(\|)\|,\|+\|*\|%\|#\|@/-/g")
     urllen=$(echo -n $time-$urlsafe | wc --bytes)
