@@ -5,14 +5,14 @@ echo
 #-- from https://wiki.froth.zone/wiki/Prelinger_Archives
 #-- so this file was made, which has -p off
 localip="10.0.0.232"
-pidcount=$(ps -ef | grep -v grep | grep arcnop.sh | wc -l)
+basepath="/zd/put/cunt/warc"
+pidcount=$(ps -ef | grep -v grep | grep "arcnop " | wc -l)
 if [[ $pidcount -gt 5 ]]; then
     echo "Too many arcnop.sh PID(s) detected. Try again later. PID(s):"
-    ps -ef | grep -v grep | grep arcnop | grep -n $
+    ps -ef | grep -v grep | grep "arcnop " | grep -n $
     exit 0
 else
     url="$(echo -n "$REQUEST_URI" | sed "s/^\/cgi-bin\/arcnop?url=//g")"
-    basepath="/zc/put/cunt/warc"
     time="$(TZ=UTC date -u +%Y%m%d%H%M%S)"
     urlsafe=$(echo "$url" | sed "s/:\|\/\|?\|=\|&\|(\|)\|,\|+\|*\|%\|#\|@/-/g")
     urllen=$(echo -n $time-$urlsafe | wc --bytes)
