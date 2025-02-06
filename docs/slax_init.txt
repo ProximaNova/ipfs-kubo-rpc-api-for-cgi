@@ -6,7 +6,7 @@ apt-get install openssh-server vlock tint sudo -y # this should also install ope
 adduser guest sudo
 passwd guest
 su guest
-sudo apt install vim xxd lynx curl htop screen nginx bc tor torsocks -y
+sudo apt install vim xxd lynx curl htop screen nginx bc tor torsocks gpg -y
 ssh-keygen -t ed25519
 cat ~/.ssh/id_ed25519.pub # use the output of this as the contents of $Nonce1
 exit
@@ -22,7 +22,7 @@ TZ=UTC wget -qO- https://dist.ipfs.tech/kubo/v0.32.0/kubo_v0.32.0_linux-386.tar.
 
 # long version = "ipfs pin ls --type=recursive; ipfs files ls /a; ..."
 # go to the other computer and copy public and private key (was/is in /zc/b/z7/config) to ~/.ipfs/config
-# use that one PeerID+PrivKey
+# use that one PeerID+PrivKey, or [1]
 # skip: HDD died - sudo mkdir /mnt/z7
 # skip: HDD died - sudo umount /media/lubuntu/ae3251f4-9619-4429-b246-91e03cb68466
 # skip: HDD died - sudo mount /dev/sdc1 /mnt/z7
@@ -107,12 +107,33 @@ sudo vim /etc/ssh/sshd_config
 # PasswordAuthentication no
 sudo systemctl restart sshd
 
-# After changing the IP address, check if Internet access is working. Problem: function add, and adding default thing only fixes it for a day or two then it goes back to 10.0.0.[not 229]
+# After changing the IP address, check if Internet access is working. Problem: function add, and adding default thing only fixes it for a day or two then it goes back to 10.0.0.[not 229]. Fix at Nonce2.
 ping google.com
 # maybe:    sudo ifconfig wlo1 10.0.0.229 netmask 255.0.0.0 broadcast 10.255.255.255
 # or maybe: sudo ifconfig wlo1 10.0.0.229 netmask 255.255.255.0 broadcast 0.0.0.0
 sudo ip route add default via 10.0.0.1 # IP address of router = 10.0.0.1
 sudo systemctl restart tor
+
+# Nonce2
+sudo vim /etc/network/interfaces
+#add:
+auto wlo1
+iface wlo1 inet static
+    address 10.0.0.229
+    netmask 255.255.255.0
+    gateway 10.0.0.1
+    dns-nameservers 75.75.75.75
+    dns-nameservers 75.75.76.76
+#/add
+aa() { sudo ip link set wlo1 down; sudo ip addr flush dev wlo1; sudo ip link set wlo1 up; sudo systemctl restart networking; }
+aa & disown
+#kill SSH PID
+ssh guest@10.0.0.229
+
+# Nonce2 didn't work (after a day or two it went back to 10.0.0.[not 229]), so maybe this will fix it:
+ps aux | grep -i dhclient
+sudo kill $dhclientPID
+sudo systemctl mask dhclient
 
 # In TTY, change volume to 70% of max volume
 amixer sset Master 70%
