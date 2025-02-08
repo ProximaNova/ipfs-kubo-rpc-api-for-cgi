@@ -1,5 +1,37 @@
 #docs/slax_init.txt
 ctrl+alt+f1 [...]
+
+# Connect to WiFi:
+# Press any hardware button to turn off Airplane Mode then run:
+rfkill
+rfkill unblock wlan
+# ...
+rfkill
+# Make sure everything is unblocked, otherwise:
+# Press the hardware button again and
+rfkill unblock all
+rfkill
+# Should show wlo1:
+ifconfig
+# Create a config file:
+echo "ctrl_interface=/run/wpa_supplicant update_config=1" > /etc/wpa_supplicant/wpa_supplicant-wlo1.conf
+# Maybe run this command with a " " at the start so it isn't recorded to history:
+wpa_passphrase SSID\ Name password >> /etc/wpa_supplicant/wpa_supplicant-wlo1.conf
+wpa_supplicant -B -i wlo1 -c /etc/wpa_supplicant/wpa_supplicant-wlo1.conf
+# Remove the password from the plain text file as it doesn't have to be in there:
+nano /etc/wpa_supplicant/wpa_supplicant-wlo1.conf
+# Static assignment of IP address
+sudo ip addr add 10.0.0.229/24 dev wlo1
+# Connect it to the router
+ip route add default via 10.0.0.1
+# Make sure DHCP isn't running, and if it is, kill it
+ps aux | grep -i dhclient
+sudo systemctl mask dhclient
+# Test Internet reachability
+ping google.com
+apt install openssh-server -y
+
+# Now that SSH works, do this:
 ssh root@10.0.0.229
 echo -ne "\033[9;5]" > /dev/tty1
 apt-get install openssh-server vlock tint sudo -y # this should also install openssh-client
@@ -14,11 +46,14 @@ exit
 ssh-copy-id guest@10.0.0.229
 echo "$Nonce1" >> ~/.ssh/authorized_keys
 ssh guest@10.0.0.229
-ssh-copy-id u@10.0.0.232
+# ssh-copy-id u@10.0.0.232 = "All keys were skipped because they already exist on the remote system."
+# So instead, run:
+ssh u@10.0.0.232
+exit
 
 # start https://gateway.pinata.cloud/ipfs/QmWBpEJHARRef2JcdPjCqfZoAUFHiiZVn9YCj3fjXDYeSs in low-powered mode ("--profile=lowpower")
 # by running:
-TZ=UTC wget -qO- https://dist.ipfs.tech/kubo/v0.32.0/kubo_v0.32.0_linux-386.tar.gz | zcat > kubo_v0.30.0_linux-386.tar; tar -xf kubo*; rm *.tar; cd kubo; sudo ./install.sh; ipfs init --profile=lowpower; echo /ipns/dist.ipfs.tech/kubo/v0.32.0/kubo_v0.32.0_linux-386.tar.gz | ipfs add -QH
+TZ=UTC wget -O- https://dist.ipfs.tech/kubo/v0.32.0/kubo_v0.32.0_linux-386.tar.gz | zcat > kubo_v0.30.0_linux-386.tar; tar -xf kubo*; rm *.tar; cd kubo; sudo ./install.sh; ipfs init --profile=lowpower; echo /ipns/dist.ipfs.tech/kubo/v0.32.0/kubo_v0.32.0_linux-386.tar.gz | ipfs add -QH
 
 # long version = "ipfs pin ls --type=recursive; ipfs files ls /a; ..."
 # go to the other computer and copy public and private key (was/is in /zc/b/z7/config) to ~/.ipfs/config
@@ -47,13 +82,17 @@ cpu1=/sys/devices/system/cpu/cpu1/cpufreq/scaling_max_freq; cpumax=$(cat $cpu1);
 cpu2=/sys/devices/system/cpu/cpu2/cpufreq/scaling_max_freq; cpumax=$(cat $cpu2); throttle=$(echo $cpumax \* $p | bc -l | sed "s/\..*//g"); echo $cpumax; echo $throttle; sudo echo $throttle > $cpu2
 # CPU3 throttled:
 cpu3=/sys/devices/system/cpu/cpu3/cpufreq/scaling_max_freq; cpumax=$(cat $cpu3); throttle=$(echo $cpumax \* $p | bc -l | sed "s/\..*//g"); echo $cpumax; echo $throttle; sudo echo $throttle > $cpu3
+# It rounds to the nearest something:
+# (1) sudo echo 1926100 > $cpu0
+# (2) cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq
+# (3) 1866000
 exit
 
-# /start Don't run this in GNU Screen or over ssh:
+# <section> Don't run this in GNU Screen or over ssh:
 sudo apt update
 grep security /etc/apt/sources.list | sudo tee /etc/apt/security.sources.list
 sudo apt-get upgrade -o Dir::Etc::SourceList=/etc/apt/security.sources.list -y & disown
-# /end
+# </section>
 
 # nginx config - was/is detailed by /zc/b/etc-nginx/conf.d-ipfs.conf:
 sudo openssl req -x509 -nodes -days 1001 -newkey rsa:2048 -keyout /etc/ssl/private/ssigned.key -out /etc/ssl/private/ssigned.crt
@@ -90,11 +129,13 @@ sudo sed -i "s/\/root:\/bin\/bash/\/root:\/usr\/sbin\/nologin/g" /etc/passwd
 # IPFS info, enable ifconfig, fix IP
 jobs -l; utc; ipfs swarm peers | wc -l; ipfs stats bw; utc; ssh guest@10.0.0.229 "echo ====; echo -n 'files: '; find ~/.ipfs/blocks/ -type f -name *.data | wc -l; ipfs swarm peers | wc -l; ipfs stats bw; df -h /"; utc
 vim ~/.bashrc
-# add:
-# export PATH=$PATH:/usr/sbin
-# alias utc="date -u +%Y-%m-%dT%H:%M:%S.%NZ"
-# alias l='ls -CF'
-# alias ws="wget --spider --no-check-certificate"
+# add (uncommented):
+#export PATH=$PATH:/usr/sbin
+#alias utc="date -u +%Y-%m-%dT%H:%M:%S.%NZ"
+#alias l='ls -CF'
+#alias ws="wget --spider --no-check-certificate"
+# For current HDD, add this to ~/.bashrc:
+#export IPFS_PATH=/mnt/z5/ipfs
 aa() { sudo ip addr del 10.0.0.212/24 dev wlo1; sudo ip addr add 10.0.0.229/24 dev wlo1; } # or whatever IP address which isn't 10.0.0.229
 aa & disown
 # kill $sshPID # to exit
@@ -108,7 +149,7 @@ sudo vim /etc/ssh/sshd_config
 sudo systemctl restart sshd
 
 # After changing the IP address, check if Internet access is working. Problem: function add, and adding default thing only fixes it for a day or two then it goes back to 10.0.0.[not 229]. Fix at Nonce2.
-ping google.com
+sudo ping google.com
 # maybe:    sudo ifconfig wlo1 10.0.0.229 netmask 255.0.0.0 broadcast 10.255.255.255
 # or maybe: sudo ifconfig wlo1 10.0.0.229 netmask 255.255.255.0 broadcast 0.0.0.0
 sudo ip route add default via 10.0.0.1 # IP address of router = 10.0.0.1
@@ -140,7 +181,20 @@ amixer sset Master 70%
 exit
 
 # Edit crontab, add a thing to delete all files in ~/.ipfs/ every 24 hours
-crontab
-...
+crontab -e
+# Add line(s):
+#0 0 * * * find /home/guest/.ipfs -type f -name *.data -delete
+0 0 * * * ipfs repo gc
+
+# For current HDD:
+sudo mkdir /mnt/z5
+sudo mount /dev/sdc1 /mnt/z5
+ipfs daemon & disown
+exit
+
+# <section> Don't run this in GNU Screen or over ssh:
+vlock -a
+# </section>
 
 # Idea: save /etc/ssl/private/ssigned.key /etc/ssl/private/ssigned.crt and SSH keys to somewhere in /zc/b/
+# Note: If using Kubo IPFS with crappy hardware, only do DAG import/export while the daemon is offline.
