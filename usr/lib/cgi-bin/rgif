@@ -1,0 +1,17 @@
+#!/bin/bash
+echo "Content-type: image/gif"
+echo
+# Format: 500-999.https://example.com/vid.gif
+data="$(echo -n "$REQUEST_URI" | sed "s/^\/cgi-bin\/rgif?url=//g")"
+range="$(echo "$data" | sed "s/\.http.*//g")"
+if [[ "$range" =~ \+ ]]; then
+    offset="$(echo "$data" | perl -pE "s/\+.*//g")"
+    size1="$(echo "$data" | perl -pE "s/^\d*\+//g" | sed "s/\.h.*//g")"
+    size2=$(expr $offset + $size1)
+    range="$offset-$size2"
+    url="$(echo "$data" | perl -pE "s/^\d*\+\d*\.//g")"
+    curl -sLk --range $range "$url"
+else
+    url="$(echo "$data" | perl -pE "s/^\d*-\d*\.//g")"
+    curl -sLk --range $range "$url"
+fi
