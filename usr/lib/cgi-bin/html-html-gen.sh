@@ -2,23 +2,16 @@
 echo "Content-type: text/html"
 echo; url="$REQUEST_URI"
 
-#--cd /zd/put/bash-html-gen
-#--ls
-#--unixtime=$(date +%s)
-#--#mkdir "$unixtime"
-#--#cd "$unixtime"
-#cd "/zd/put/bash-html-gen/1738609879"
 cd "/zd/put/html-html-gen/0"
 #pwd
 #--#echo sddsdss >> ds
 #--cp --update=none ../template.htm index.html
-time=$(date +%s)
-mkdir $time; cd $time
+timedir=$(date +%s)
+mkdir $timedir; cd $timedir
 # Copy template HTML to current folder
 cp --update=none ../template.htm index.html
 # Get name of current folder
 dirnobase="$(pwd | sed "s/.*\///g")"
-echo "$dirnobase"
 
 #1 Read the input from the form
 #1read -r CONTENT_LENGTH
@@ -33,21 +26,17 @@ cat > "$TEMP_FILE"
 # get filename
 filename="$(head -n1 "$TEMP_FILE" | tr -d \\r | sed "s/\"$//g" | sed "s/.*\"//g")"
 tail -n+4 "$TEMP_FILE" | head -n-17 | head -c-2 > "$filename"
-echo "$filename"
 
 # get title
 title="$(tail -n14 "$TEMP_FILE" | head -n1 | tr -d \\n | tr -d \\r)"
-echo "$title"
 titlesafe="$(echo -n "$title" | perl -pE "s/\x5c/1734216500x005c1734217364/g" | sed "s/\./1734216500x002e1734217364/g" | sed "s/,/1734216500x002c1734217364/g" | sed "s/\//1734216500x002f1734217364/g" | sed "s/?/1734216500x003f1734217364/g" | sed "s/;/1734216500x003b1734217364/g" | sed "s/:/1734216500x003a1734217364/g" | sed "s/\"/1734216500x00221734217364/g" | sed "s/{/1734216500x007b1734217364/g" | sed "s/\[/1734216500x005b1734217364/g" | sed "s/}/1734216500x007d1734217364/g" | sed "s/\]/1734216500x005d1734217364/g" | sed "s/=/1734216500x003d1734217364/g" | sed "s/+/1734216500x002b1734217364/g" | sed "s/\^/1734216500x005e1734217364/g" | sed "s/%/1734216500x00251734217364/g" | sed 's/\$/1734216500x00241734217364/g' | sed "s/@/1734216500x00401734217364/g" | sed 's/!/1734216500x00211734217364/g' | sed "s/\`/1734216500x00601734217364/g" | sed "s/~/1734216500x007e1734217364/g" | sed "s/</1734216500x003c1734217364/g" | sed "s/>/1734216500x003e1734217364/g" | sed "s/|/1734216500x007c1734217364/g" | sed "s/'/1734216500x00271734217364/g" | sed "s/&/1734216500x00261734217364/g" | sed "s/#/1734216500x00231734217364/g" | sed "s/-/1734216500x002d1734217364/g" | sed "s/_/1734216500x005f1734217364/g" | sed "s/)/1734216500x00291734217364/g" | sed "s/(/1734216500x00281734217364/g" | sed "s/\*/1734216500x002a1734217364/g" | sed "s/1734216500/\\\\\&#/g" | sed "s/1734217364/;/g")"
 
 # get desc
 desc="$(tail -n10 "$TEMP_FILE" | head -n1 | tr -d \\n | tr -d \\r)"
-echo "$desc"
 descsafe="$(echo -n "$desc" | perl -pE "s/\x5c/1734216500x005c1734217364/g" | sed "s/\./1734216500x002e1734217364/g" | sed "s/,/1734216500x002c1734217364/g" | sed "s/\//1734216500x002f1734217364/g" | sed "s/?/1734216500x003f1734217364/g" | sed "s/;/1734216500x003b1734217364/g" | sed "s/:/1734216500x003a1734217364/g" | sed "s/\"/1734216500x00221734217364/g" | sed "s/{/1734216500x007b1734217364/g" | sed "s/\[/1734216500x005b1734217364/g" | sed "s/}/1734216500x007d1734217364/g" | sed "s/\]/1734216500x005d1734217364/g" | sed "s/=/1734216500x003d1734217364/g" | sed "s/+/1734216500x002b1734217364/g" | sed "s/\^/1734216500x005e1734217364/g" | sed "s/%/1734216500x00251734217364/g" | sed 's/\$/1734216500x00241734217364/g' | sed "s/@/1734216500x00401734217364/g" | sed 's/!/1734216500x00211734217364/g' | sed "s/\`/1734216500x00601734217364/g" | sed "s/~/1734216500x007e1734217364/g" | sed "s/</1734216500x003c1734217364/g" | sed "s/>/1734216500x003e1734217364/g" | sed "s/|/1734216500x007c1734217364/g" | sed "s/'/1734216500x00271734217364/g" | sed "s/&/1734216500x00261734217364/g" | sed "s/#/1734216500x00231734217364/g" | sed "s/-/1734216500x002d1734217364/g" | sed "s/_/1734216500x005f1734217364/g" | sed "s/)/1734216500x00291734217364/g" | sed "s/(/1734216500x00281734217364/g" | sed "s/\*/1734216500x002a1734217364/g" | sed "s/1734216500/\\\\\&#/g" | sed "s/1734217364/;/g")"
 
 # get tags
 tags="$(tail -n6 "$TEMP_FILE" | head -n1 | tr -d \\n | tr -d \\r)"
-echo "$tags"
 tagssafe="$(echo -n "$tags" | perl -pE "s/\x5c/1734216500x005c1734217364/g" | sed "s/\./1734216500x002e1734217364/g" | sed "s/\//1734216500x002f1734217364/g" | sed "s/?/1734216500x003f1734217364/g" | sed "s/;/1734216500x003b1734217364/g" | sed "s/:/1734216500x003a1734217364/g" | sed "s/\"/1734216500x00221734217364/g" | sed "s/{/1734216500x007b1734217364/g" | sed "s/\[/1734216500x005b1734217364/g" | sed "s/}/1734216500x007d1734217364/g" | sed "s/\]/1734216500x005d1734217364/g" | sed "s/=/1734216500x003d1734217364/g" | sed "s/+/1734216500x002b1734217364/g" | sed "s/\^/1734216500x005e1734217364/g" | sed "s/%/1734216500x00251734217364/g" | sed 's/\$/1734216500x00241734217364/g' | sed "s/@/1734216500x00401734217364/g" | sed 's/!/1734216500x00211734217364/g' | sed "s/\`/1734216500x00601734217364/g" | sed "s/~/1734216500x007e1734217364/g" | sed "s/</1734216500x003c1734217364/g" | sed "s/>/1734216500x003e1734217364/g" | sed "s/|/1734216500x007c1734217364/g" | sed "s/'/1734216500x00271734217364/g" | sed "s/&/1734216500x00261734217364/g" | sed "s/#/1734216500x00231734217364/g" | sed "s/-/1734216500x002d1734217364/g" | sed "s/_/1734216500x005f1734217364/g" | sed "s/)/1734216500x00291734217364/g" | sed "s/(/1734216500x00281734217364/g" | sed "s/\*/1734216500x002a1734217364/g" | sed "s/1734216500/\\\\\&#/g" | sed "s/1734217364/;/g")"
 
 # get media type
@@ -57,7 +46,6 @@ type=$(echo "$type" | sed "s/^t$/text/g"); type=$(echo "$type" | sed "s/^v$/vide
 type=$(echo "$type" | sed "s/^i$/image/g"); type=$(echo "$type" | sed "s/^d$/data/g")
 type=$(echo "$type" | sed "s/^a$/audio/g"); type=$(echo "$type" | sed "s/^s$/software/g")
 type=$(echo "$type" | sed "s/^w$/web/g")
-echo "$type"
 
 # Write file metadata to text file
 TZ=UTC stat "$filename" >> file_meta.txt; TZ=UTC stat -t "$filename" >> file_meta.txt
@@ -91,7 +79,7 @@ sed -i "s/META1/$titlesafe/g" index.html
 sed -i "s/IMAGE1/.\/$filename/g" index.html
 
 # Write page creation timestamp to HTML
-time="$(TZ=UTC date -u +%Y-%m-%d\ %H:%M:%S)"; sed -i "s/TIME1/$time UTC by <a href=\"..\/how.sh\">bash-html-gen<\/a>/g" index.html
+time="$(TZ=UTC date -u +%Y-%m-%d\ %H:%M:%S)"; sed -i "s/TIME1/$time UTC by <a href=\"..\/how.sh\">html-html-gen<\/a>/g" index.html
 
 # Write tags, if any, to HTML
 if [ ! -z "$tags" ]; then sed -i "s/<\x21--br><div>Tags/<br><div>Tags/g" index.html; sed -i "s/TAGS1<\/div-->/$tagssafe<\/div>/g" index.html; fi
@@ -103,13 +91,15 @@ if [ ! -z "$desc" ]; then sed -i "s/<\x21--br><div>Description/<br><div>Descript
 sed -i "s/<\x21--br><div>Type/<br><div>Type/g" index.html
 sed -i "s/TYPE1<\/div-->/$type<\/div>/g" index.html
 
+# Write folder name to HTML, and write index of index link to HTML
+if [ ! -z "$dirnobase" ]; then sed -i "s/<\x21--br><div>In folder/<br><div>In folder/g" index.html; sed -i "s/DIR1<\/div-->/$dirnobase<\/div><div>Return | <a href=\"..\">.. (go up one folder)<\/a><\/div>/g" index.html; fi
+
 mv -n "$TEMP_FILE" "/zd/put/bash-html-gen_to_delete/htmlgen/"
 
-#1 Parse the uploaded file
-#1BOUNDARY="$(echo "$CONTENT_TYPE" | sed -n 's/^.*boundary=$.*$$/\1/p')"
-#1echo "$BOUNDARY"
-#1FILE_NAME="$(grep -oP "filename=\"\K[^\"]+" "$TEMP_FILE")"
-#1FILE_CONTENT=$(awk -v RS="--$BOUNDARY" -v ORS="" '/^Content-Disposition: form-data; name="file"/ {getline; print}' "$TEMP_FILE")
+# Add to IPFS
+localip="10.0.0.232"
+filesf() { basedir="$(pwd)"; basedirlen=$(expr $(echo -n "$basedir" | wc --bytes) + 1); find "$basedir" -type f | basedirlen="$basedirlen" xargs -d "\n" sh -c 'for args do nobasedir=$(echo "$args" | sed -E "s/^.{$basedirlen}//g"); echo " -F "file=@"\"$args\";filename=\"$nobasedir\"" | tr -d \\n; done' _; }
+curl -k -X POST -H "Content-Type: multipart/form-data" $(filesf) "https://$localip:5001/api/v0/add?cid-version=1&chunker=size-1048576&recursive=true&wrap-with-directory=true&pin=false"
 
 #1 Create a directory to store uploaded files if it doesn't exist
 #1UPLOAD_DIR="/var/www/html/uploads"
