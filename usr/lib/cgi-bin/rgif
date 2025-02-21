@@ -3,15 +3,33 @@ echo "Content-type: image/gif"
 echo
 # Format: 500-999.https://example.com/vid.gif
 data="$(echo -n "$REQUEST_URI" | sed "s/^\/cgi-bin\/rgif?url=//g")"
-range="$(echo "$data" | sed "s/\.http.*//g")"
-num1="$(echo "$range" | sed "s/-.*//g")"
-num2="$(echo "$range" | sed "s/.*-//g")"
-url="$(echo "$data" | perl -pE "s/^\d*-\d*\.//g")"
 
-if [ $num2 -lt $num1 ]; then
-    curl -sLk --range $num1-$(expr $num1 + $num2) "$url"
+if ! [[ "$data" =~ ^[0-9]*-[0-9]*\.https?:// ]] && ! [[ "$data" =~ ^[0-9]*-[0-9]*\.ipfs:// ]]; then
+    echo "Error: Invalid link."
+    head -c 6 /dev/random | xxd -ps
 else
-    curl -sLk --range $range "$url"
+    if [[ "$data" =~ ^[0-9]*-[0-9]*\.https?://(localhost|127\.|10\.|172\.16\.|172\.17\.|172\.18\.|172\.19\.|172\.20\.|172\.21\.|172\.22\.|172\.23\.|172\.24\.|172\.25\.|172\.26\.|172\.27\.|172\.28\.|172\.29\.|172\.30\.|172\.31\.|192\.168\.|169\.254\.) ]]; then
+        echo "Error: Nonpublic URL"
+        head -c 6 /dev/random | xxd -ps
+    else
+        range="$(echo "$data" | sed "s/\.http.*\|\.ipfs.*//g")"
+        num1="$(echo "$range" | sed "s/-.*//g")"
+        num2="$(echo "$range" | sed "s/.*-//g")"
+        url="$(echo "$data" | perl -pE "s/^\d*-\d*\.//g")"
+        func1() {
+            if [ $3 -lt $2 ]; then
+                curl -sLk --max-redirs $4 --max-time 60 --range $2-$(expr $2 + $3) "$1"
+            else
+                curl -sLk --max-redirs $4 --max-time 60 --range $range "$1"
+            fi
+        }
+        if [[ "$url" =~ ^ipfs:// ]]; then
+            url2="$(echo "$url" | sed "s/^ipfs../http:\/\/127.0.0.1:8080\/ipfs\//g")"
+            func1 "$url2" $num1 $num2 "1"
+        else
+            func1 "$url" $num1 $num2 "0"
+        fi
+    fi
 fi
 
 ## For 123-999 -> else and 999+40 -> if
