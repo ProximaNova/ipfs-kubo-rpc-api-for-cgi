@@ -14,9 +14,9 @@ else
         # Not "curl -L" as some websites redirect to localhost
         if [[ "$url" =~ ^ipfs:// ]]; then
             url2="$(echo "$url" | sed "s/^ipfs../http:\/\/127.0.0.1:8080\/ipfs\//g")"
-            curl -sk --max-redirs 0 "$url2" | jq
+            curl -sLk --max-redirs 1 --max-time 30 "$url2" | jq
         else
-            curl -sk --max-redirs 0 "$url" | jq
+            curl -sk --max-redirs 0 --max-time 30 "$url" | jq
         fi
     fi
 fi
