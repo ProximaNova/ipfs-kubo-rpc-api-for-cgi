@@ -76,7 +76,7 @@ sed -i "s/META1/$titlesafe/g" index.html
 sed -i "s/IMAGE1/.\/$filename/g" index.html
 
 # Write page creation timestamp to HTML
-time="$(TZ=UTC date -u +%Y-%m-%d\ %H:%M:%S)"; sed -i "s/TIME1/$time UTC by <a href=\"https:\/\/ar-io.dev\/EMryH6IEWkIKXV22ryQvuYaeJgFmm2adZ2u1Vr1bDlE\">html-html-gen<\/a>/g" index.html
+time="$(TZ=UTC date -u +%Y-%m-%d\ %H:%M:%S)"; sed -i "s/TIME1/$time UTC by <a href=\"https:\/\/arweave.net\/Te63EWzCvnn8__nDx1SIuPCWqlAL3_drW-TWQaPpQYk\">html-html-gen<\/a>/g" index.html
 
 # Write tags, if any, to HTML
 if [ ! -z "$tags" ]; then sed -i "s/<\x21--br><div>Tags/<br><div>Tags/g" index.html; sed -i "s/TAGS1<\/div-->/$tagssafe<\/div>/g" index.html; fi
@@ -98,10 +98,6 @@ localip="10.0.0.232"
 filesf() { basedir="$(pwd)"; basedirlen=$(expr $(echo -n "$basedir" | wc --bytes) + 1); find "$basedir" -type f | basedirlen="$basedirlen" xargs -d "\n" sh -c 'for args do nobasedir=$(echo "$args" | sed -E "s/^.{$basedirlen}//g"); echo " -F "file=@"\"$args\";filename=\"$nobasedir\"" | tr -d \\n; done' _; }
 curl -k -X POST -H "Content-Type: multipart/form-data" $(filesf) "https://$localip:5001/api/v0/add?cid-version=1&chunker=size-1048576&recursive=true&wrap-with-directory=true&pin=false" | tee -a "../cids$(TZ=UTC date -u +%Y%m%d).txt" | perl -pE "s/({\"Name\":\"\",\"Hash\":\")([^\"]*)/\1<a href=\"\/ipfs\/\2\">\2<\/a>/g"
 
-#1 Create a directory to store uploaded files if it doesn't exist
-#1UPLOAD_DIR="/var/www/html/uploads"
-#1mkdir -p "$UPLOAD_DIR"
-
 #1 Save the uploaded file
 #1if [[ -n "$FILE_NAME" && -n "$FILE_CONTENT" ]]; then
 #1    echo "$FILE_CONTENT" > "$UPLOAD_DIR/$FILE_NAME"
@@ -122,9 +118,6 @@ curl -k -X POST -H "Content-Type: multipart/form-data" $(filesf) "https://$local
 #1   echo "</body>"
 #1   echo "</html>"
 #1fi
-#1
-#1 Clean up
-#1rm "$TEMP_FILE"
 
 
 ## Read the form data
