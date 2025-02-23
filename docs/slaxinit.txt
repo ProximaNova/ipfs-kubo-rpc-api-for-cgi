@@ -1,3 +1,144 @@
+#docs/slaxinit.txt
+ctrl+alt+f1 [...]
+
+$ # For current HDD:
+$ umount /media/sdb1
+$ mkdir /mnt/z5
+$ mount /dev/sdb1 /mnt/z5
+
+$ # Connect to WiFi:
+$ # Press any hardware button to turn off Airplane Mode then run:
+$ rfkill
+$ rfkill unblock wlan
+$ # ...
+$ rfkill
+$ # Make sure everything is unblocked, otherwise:
+$ # Press the hardware button again and
+$ rfkill unblock all
+$ rfkill
+$ # Should show wlo1:
+$ ifconfig
+$ # Create a config file:
+$ echo "ctrl_interface=/run/wpa_supplicant update_config=1" > /etc/wpa_supplicant/wpa_supplicant-wlo1.conf
+$ # Maybe run this command with a " " at the start so it isn't recorded to history:
+$ wpa_passphrase SSID\ Name password >> /etc/wpa_supplicant/wpa_supplicant-wlo1.conf
+$ wpa_supplicant -B -i wlo1 -c /etc/wpa_supplicant/wpa_supplicant-wlo1.conf
+$ # Remove the password from the plain text file as it doesn't have to be in there:
+$ nano /etc/wpa_supplicant/wpa_supplicant-wlo1.conf
+$ # Static assignment of IP address
+$ ip addr add 10.0.0.229/24 dev wlo1
+$ # Seemingly, broadcast should be 10.0.0.255, not 0.0.0.0 (if inet=10.0.0.x)
+$ ifconfig wlo1 inet 10.0.0.229 netmask 255.255.255.0 broadcast 10.0.0.255
+$ # Connect it to the router
+$ ip route add default via 10.0.0.1
+$ # Make sure DHCP isn't running, and if it is, kill it
+$ ps aux | grep -i dhclient
+$ systemctl stop dhclient; systemctl mask dhclient
+$ # Test Internet reachability
+$ ping google.com
+
+$ # Now that SSH works, do this from a differet computer or something:
+$ ssh root@10.0.0.229
+$ echo -ne "\033[9;5]" > /dev/tty1
+$ apt install openssh-server vlock tint sudo -y
+$ adduser guest sudo
+$ passwd guest
+$ su guest
+$ sudo apt install vim xxd lynx curl htop screen nginx bc tor torsocks gpg jq apache2 pv -y
+$ ssh-keygen -t ed25519
+$ cat ~/.ssh/id_ed25519.pub # use the output of this as the contents of $Nonce1
+$ exit
+$ exit
+$ ssh-copy-id guest@10.0.0.229
+$ echo "$Nonce1" >> ~/.ssh/authorized_keys
+$ ssh guest@10.0.0.229
+$ # ssh-copy-id u@10.0.0.232 = "All keys were skipped because they already exist on the remote system."
+$ # So instead, run:
+$ ssh u@10.0.0.232
+$ exit
+
+$ # start https://gateway.pinata.cloud/ipfs/QmWBpEJHARRef2JcdPjCqfZoAUFHiiZVn9YCj3fjXDYeSs in low-powered mode ("--profile=lowpower") by running:
+$ TZ=UTC wget -O- https://dist.ipfs.tech/kubo/v0.32.0/kubo_v0.32.0_linux-386.tar.gz | zcat > kubo_v0.30.0_linux-386.tar; tar -xf kubo*; rm *.tar; cd kubo; sudo ./install.sh; ipfs init --profile=lowpower; echo /ipns/dist.ipfs.tech/kubo/v0.32.0/kubo_v0.32.0_linux-386.tar.gz | ipfs add -QH
+
+$ # long version = "ipfs pin ls --type=recursive; ipfs files ls /a; ..."
+$ # go to the other computer and copy public and private key (was/is in /zc/b/z7/config) to ~/.ipfs/config
+$ # use that one PeerID+PrivKey, or [1]
+$ ipfs swarm peers | wc -l; ipfs stats bw; ps aux | grep ipfs | grep -v grep | grep ipfs; ps -o etime $(ps aux | grep "ipfs daemon" | grep -v grep | awk '{print $2}'); df --block-size=1 /; df -h /
+$ ipfs config --json API.HTTPHeaders.Access-Control-Allow-Origin '["https://10.0.0.229:5001", "http://localhost:3000", "http://127.0.0.1:5001", "https://webui.ipfs.io"]'
+$ ipfs config --json API.HTTPHeaders.Access-Control-Allow-Methods '["PUT", "POST", "GET"]'
+
+$ # Try to prevent thermal shutdowns
+$ sudo su
+$ # 0.90 for 90%:
+$ p=0.85
+$ # CPU0 throttled:
+$ cpu0=/sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq; cpumax=$(cat $cpu0); throttle=$(echo $cpumax \* $p | bc -l | sed "s/\..*//g"); echo $cpumax; echo $throttle; sudo echo $throttle > $cpu0; cat $cpu0
+$ # CPU1 throttled:
+$ cpu1=/sys/devices/system/cpu/cpu1/cpufreq/scaling_max_freq; cpumax=$(cat $cpu1); throttle=$(echo $cpumax \* $p | bc -l | sed "s/\..*//g"); echo $cpumax; echo $throttle; sudo echo $throttle > $cpu1; cat $cpu1
+$ # CPU2 throttled:
+$ cpu2=/sys/devices/system/cpu/cpu2/cpufreq/scaling_max_freq; cpumax=$(cat $cpu2); throttle=$(echo $cpumax \* $p | bc -l | sed "s/\..*//g"); echo $cpumax; echo $throttle; sudo echo $throttle > $cpu2; cat $cpu2
+$ # CPU3 throttled:
+$ cpu3=/sys/devices/system/cpu/cpu3/cpufreq/scaling_max_freq; cpumax=$(cat $cpu3); throttle=$(echo $cpumax \* $p | bc -l | sed "s/\..*//g"); echo $cpumax; echo $throttle; sudo echo $throttle > $cpu3; cat $cpu3
+$ exit
+
+$ # Don't run the apt upgrade command in GNU Screen or over ssh:
+$ sudo apt update
+$ grep security /etc/apt/sources.list | sudo tee /etc/apt/security.sources.list
+$ sudo apt upgrade -o Dir::Etc::SourceList=/etc/apt/security.sources.list -y #& disown
+
+$ # nginx config - was/is detailed by /zc/b/etc-nginx/conf.d-ipfs.conf:
+$ sudo openssl req -x509 -nodes -days 1001 -newkey rsa:2048 -keyout /etc/ssl/private/ssigned.key -out /etc/ssl/private/ssigned.crt
+$ sudo vim /etc/nginx/conf.d/ipfs.conf
+$ sudo systemctl restart nginx
+
+$ # tor config - was/is detailed by /zc/b/hpc-var-lib-tor/ and /zc/b/etc-tor/
+$ sudo vim /etc/tor/torrc
+$ # add: HiddenServiceDir /var/lib/tor/site/
+$ # add: HiddenServicePort 80 127.0.0.1:8080
+$ sudo mkdir /var/lib/tor/site
+$ sudo su
+$ cd /var/lib/tor/site
+[...]
+$ cat /var/lib/tor/site/temp | xxd -ps -r | tee /var/lib/tor/site/hs_ed25519_public_key 1>/dev/null
+[...]
+$ cat /var/lib/tor/site/temp | xxd -ps -r | tee /var/lib/tor/site/hs_ed25519_secret_key 1>/dev/null
+$ rm /var/lib/tor/site/temp; vim /var/lib/tor/site/hostname
+$ mkdir /var/lib/tor/site/authorized_clients
+$ chown debian-tor /var/lib/tor/site
+$ chown debian-tor /var/lib/tor/site/hostname
+$ chown debian-tor /var/lib/tor/site/hs_ed25519_public_key
+$ chown debian-tor /var/lib/tor/site/hs_ed25519_secret_key
+$ chown debian-tor /var/lib/tor/site/authorized_clients
+$ chmod 2700 /var/lib/tor/site/authorized_clients
+$ chmod 2700 /var/lib/tor/site
+$ chmod 600 /var/lib/tor/site/hostname
+$ chmod 600 /var/lib/tor/site/hs_ed25519_public_key
+$ chmod 600 /var/lib/tor/site/hs_ed25519_secret_key
+$ exit
+$ sudo systemctl restart tor
+$ sudo sed -i "s/\/root:\/bin\/bash/\/root:\/usr\/sbin\/nologin/g" /etc/passwd
+
+$ vim ~/.bashrc
+$ # add (uncommented, /mnt/z5/ipfs = for current HDD):
+$ #export PATH=$PATH:/usr/sbin
+$ #alias utc="date -u +%Y-%m-%dT%H:%M:%S.%NZ"
+$ #alias l='ls -CF'
+$ #alias ws="wget --spider --no-check-certificate"
+$ #export IPFS_PATH=/mnt/z5/ipfs
+
+$ # Only allow key-based auth
+$ sudo vim /etc/ssh/sshd_config
+$ # uncomment and change to:
+$ #PubkeyAuthentication yes
+$ #PasswordAuthentication no
+$ sudo systemctl restart sshd
+
+$ # Might help... NOPE
+$ sudo vim /etc/network/interfaces
+$ # <add>
+auto wlo1
+iface wlo1 inet static
+    address 10.0.0.229
     netmask 255.255.255.0
     gateway 10.0.0.1
     dns-nameservers 75.75.75.75
