@@ -1,0 +1,42 @@
+    netmask 255.255.255.0
+    gateway 10.0.0.1
+    dns-nameservers 75.75.75.75
+    dns-nameservers 75.75.76.76
+$ # </add>
+
+$ # Optional - change volume to 70% of max volume
+$ amixer sset Master 70%
+
+$ # Edit crontab, add a thing to delete all files in ~/.ipfs/ every 24 hours
+$ crontab -e
+$ # <add>
+#0 0 * * * find /home/guest/.ipfs -type f -name *.data -delete
+0 0 * * * ipfs repo gc
+$ # </add>
+
+$ # Uninstall some likely unneeded GUI:
+$ dpkg -l | cat | grep -i "gtk\|xfce\|gnome"
+$ sudo apt purge chromium chromium-common chromium-sandbox -y
+$ sudo apt remove galculator connman-gtk libfm-gtk4:i386 gtk-update-icon-cache gtk2-engines-murrine:i386 libdbusmenu-gtk3-4:i386 murrine-themes xarchiver libxfce4ui-common adwaita-icon-theme gconf2-common libfm-gtk-data libgtk-3-common libgtk2.0-common -y
+
+$ # start IPFS
+$ sudo systemctl restart nginx
+$ sudo systemctl restart apache2
+$ ipfs daemon & disown; sleep 9; ipfs --timeout=60s resolve /ipns/k51qzi5uqu5diwzufekv38cynmdqlh0lwic1ve0d9w5a0glpy52qjc0l77h4t5; mfsroot=$(ssh u@10.0.0.232 "export IPFS_PATH=/zc/ipfs; ipfs files stat / | head -n1"); date -u; ipfs name publish $mfsroot; date -u; ipfs ls /ipns/k51qzi5uqu5diwzufekv38cynmdqlh0lwic1ve0d9w5a0glpy52qjc0l77h4t5
+
+$ # Don't run this in GNU Screen or over ssh:
+$ vlock -a
+
+# Idea: save /etc/ssl/private/ssigned.key /etc/ssl/private/ssigned.crt and SSH keys to somewhere in /zc/b/
+# ssh host key is in /etc/ssh/
+# Note: If using Kubo IPFS with crappy hardware, only do DAG import/export while the daemon is offline.
+# Or run it with "$ dataout | pv -L 90K | datain" (limits data passing through pipes to 90 KB/s)
+
+
+
+
+
+
+
+
+[1] see slax_init.txt
