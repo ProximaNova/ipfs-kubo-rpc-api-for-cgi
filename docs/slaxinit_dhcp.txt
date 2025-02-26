@@ -1,0 +1,69 @@
+#docs/slaxinit_dhcp.txt
+#Don't mask DHCP (dhclient), otherwise you may get "unfixable" networking problems
+#[...]ctrl+alt+f1 [...]
+umount /media/sdb1
+mkdir /mnt/z5
+mount /dev/sdb1 /mnt/z5
+cd /mnt/z5/hpc
+rfkill unblock all
+cp -n wlo1.conf /etc/wpa_supplicant
+wpa_supplicant -B -i wlo1 -c /etc/wpa_supplicant/wlo1.conf
+adduser guest sudo
+passwd guest
+dhclient
+ping google.com
+su guest
+su
+exit
+sudo apt install openssh-server vlock sudo -y
+ifconfig wlo1 # see the IP address assigned by DHCP
+dhcpIp="[ip_address_here]"
+sudo ip link set wlo1 down
+sudo ip addr del $dhcpIp/24 dev wlo1
+sudo ip addr add 10.0.0.229/24 dev wlo1 broadcast 10.0.0.255
+sudo ip route add default via 10.0.0.1
+sudo ip link set wlo1 up
+cd /mnt/z5/hpc
+sudo rsync -a --info=progress2 etc-ssh/ /etc/ssh/
+sudo rsync -a --info=progress2 home-guest/.ssh/ /home/guest/.ssh/
+vlock -a
+ssh guest@10.0.0.229 # from another computer
+su
+echo -ne "\033[9;5]" > /dev/tty1
+exit
+sudo apt install vim xxd lynx curl htop screen nginx bc tor torsocks gpg jq apache2 pv tint -y # yt-dlp ffmpeg
+sudo cp -n ipfs /usr/local/bin/
+ipfs swarm peers | wc -l; ipfs stats bw; ps aux | grep ipfs | grep -v grep | grep ipfs; ps -o etime $(ps aux | grep "ipfs daemon" | grep -v grep | awk '{print $2}'); df --block-size=1 /; df -h /
+su
+p=0.85
+cpu0=/sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq; cpumax=$(cat $cpu0); throttle=$(echo $cpumax \* $p | bc -l | sed "s/\..*//g"); echo $cpumax; echo $throttle; sudo echo $throttle > $cpu0; cat $cpu0
+cpu1=/sys/devices/system/cpu/cpu1/cpufreq/scaling_max_freq; cpumax=$(cat $cpu1); throttle=$(echo $cpumax \* $p | bc -l | sed "s/\..*//g"); echo $cpumax; echo $throttle; sudo echo $throttle > $cpu1; cat $cpu1
+cpu2=/sys/devices/system/cpu/cpu2/cpufreq/scaling_max_freq; cpumax=$(cat $cpu2); throttle=$(echo $cpumax \* $p | bc -l | sed "s/\..*//g"); echo $cpumax; echo $throttle; sudo echo $throttle > $cpu2; cat $cpu2
+cpu3=/sys/devices/system/cpu/cpu3/cpufreq/scaling_max_freq; cpumax=$(cat $cpu3); throttle=$(echo $cpumax \* $p | bc -l | sed "s/\..*//g"); echo $cpumax; echo $throttle; sudo echo $throttle > $cpu3; cat $cpu3
+exit
+sudo apt update
+grep security /etc/apt/sources.list | sudo tee /etc/apt/security.sources.list
+sudo rsync -a --info=progress2 etc-ssl/ /etc/ssl/; sudo rsync -a --info=progress2 etc-apache2/ /etc/apache2/; sudo rsync -a --info=progress2 usr-lib-cgi-bin/ /usr/lib/cgi-bin/; sudo rsync -a --info=progress2 etc-nginx/ /etc/nginx/; sudo rsync -a --info=progress2 etc-tor/ /etc/tor/; sudo rsync -a --info=progress2 var-lib-tor/ /var/lib/tor/
+sudo systemctl restart tor
+sudo sed -i "s/\/root:\/bin\/bash/\/root:\/usr\/sbin\/nologin/g" /etc/passwd
+vim ~/.bashrc
+ctrl+end, o, paste in:
+ export PATH=$PATH:/usr/sbin
+ alias utc="date -u +%Y-%m-%dT%H:%M:%S.%NZ"
+ alias l='ls -CF'
+ alias ws="wget --spider --no-check-certificate"
+ export IPFS_PATH=/mnt/z5/ipfs
+esc, :wq
+sudo systemctl restart sshd
+crontab -e
+2, enter, ctrl+end, o, paste in:
+ #0 0 * * * find /home/guest/.ipfs -type f -name *.data -delete
+ 0 0 * * * ipfs repo gc
+esc, :wq
+sudo apt remove chromium chromium-common chromium-sandbox galculator connman-gtk libfm-gtk4:i386 gtk-update-icon-cache gtk2-engines-murrine:i386 libdbusmenu-gtk3-4:i386 murrine-themes xarchiver libxfce4ui-common adwaita-icon-theme gconf2-common libfm-gtk-data libgtk-3-common libgtk2.0-common -y # dpkg -l | cat | grep -i "gtk\|xfce\|gnome"
+exit
+ssh guest@10.0.0.229
+exit
+sudo apt upgrade -o Dir::Etc::SourceList=/etc/apt/security.sources.list -y # Don't run this in GNU Screen or over ssh
+sudo systemctl restart nginx; sudo systemctl restart apache2 # restart web servers and start up IPFS only after upgrading
+ipfs daemon & disown #; sleep 9; ipfs --timeout=60s resolve /ipns/k51qzi5uqu5diwzufekv38cynmdqlh0lwic1ve0d9w5a0glpy52qjc0l77h4t5; mfsroot=$(ssh u@10.0.0.232 "export IPFS_PATH=/zc/ipfs; ipfs files stat / | head -n1"); date -u; ipfs name publish $mfsroot; date -u; ipfs ls /ipns/k51qzi5uqu5diwzufekv38cynmdqlh0lwic1ve0d9w5a0glpy52qjc0l77h4t5
