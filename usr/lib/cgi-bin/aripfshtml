@@ -1,0 +1,13 @@
+#!/bin/bash
+echo "Content-type: text/html"
+echo
+id="$(echo -n $REQUEST_URI | sed "s/^\/cgi-bin\/aripfshtml?id=//g")"
+
+if [[ "$id" =~ ^[a-zA-Z0-9]+$ ]]; then
+    json="$(curl 'https://arweave-search.goldsky.com/graphql' -H 'Accept-Encoding: gzip, deflate, br' -H 'Content-Type: application/json' -H 'Accept: application/json' -H 'Connection: keep-alive' -H 'DNT: 1' -H 'Origin: https://arweave-search.goldsky.com' --data-binary '{"query":"query just_values {\n transactions(\n first: 10,\n tags: [\n {\n name: \"IPFS-Hash\",\n values: \"'$id'\"\n }\n ]\n ) \n {\n edges {\n node {\n id\n tags {\n name\n value\n }\n }\n }\n }\n}\n"}' --compressed)"
+    ar="$(echo "$json" | jq | grep '"id"' | sed "s/.* \"//g" | sed "s/\".*//g")"
+    echo '<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8" /><meta http-equiv="X-UA-Compatible" content="IE=edge" /><meta name="viewport" content="width=device-width, initial-scale=1.0" /><title>IPFS CID in Arweave: '$id'</title></head><body><p>JSON:<br>'$json'</p><p>If image:<br><img style="width:90%;" src="https://arweave.net/'$ar'" /></p></body></html>'
+else
+    echo "Invalid CID"
+    head -c 6 /dev/random | xxd -ps
+fi
