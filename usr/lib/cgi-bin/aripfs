@@ -1,0 +1,11 @@
+#!/bin/bash
+echo "Content-type: application/json"
+echo
+id="$(echo -n $REQUEST_URI | sed "s/^\/cgi-bin\/aripfs?id=//g")"
+
+if [[ "$id" =~ ^[a-zA-Z0-9]+$ ]]; then
+    curl 'https://arweave-search.goldsky.com/graphql' -H 'Accept-Encoding: gzip, deflate, br' -H 'Content-Type: application/json' -H 'Accept: application/json' -H 'Connection: keep-alive' -H 'DNT: 1' -H 'Origin: https://arweave-search.goldsky.com' --data-binary '{"query":"query just_values {\n transactions(\n first: 10,\n tags: [\n {\n name: \"IPFS-Hash\",\n values: \"'$id'\"\n }\n ]\n ) \n {\n edges {\n node {\n id\n tags {\n name\n value\n }\n }\n }\n }\n}\n"}' --compressed
+else
+    echo "Invalid CID"
+    head -c 6 /dev/random | xxd -ps
+fi
