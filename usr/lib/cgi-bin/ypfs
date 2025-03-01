@@ -1,0 +1,28 @@
+#!/bin/bash
+echo "Content-type: text/plain"
+echo
+basepath="/zd/put/cunt"
+localip="127.0.0.1:5000"
+v=$(echo -n $REQUEST_URI | sed "s/^\/cgi-bin\/ypfs?v=//g" | sed "s/&.*//g")
+re=$(echo -n $REQUEST_URI | sed "s/^.\{28\}//g") # related to the length of $v
+res=$(echo -n $re | sed "s/&..//g")
+
+# Does Bash have a thing where /^a{3}$/ = "aaa"?
+if [[ "$v" =~ ^[a-zA-Z0-9_-][a-zA-Z0-9_-][a-zA-Z0-9_-][a-zA-Z0-9_-][a-zA-Z0-9_-][a-zA-Z0-9_-][a-zA-Z0-9_-][a-zA-Z0-9_-][a-zA-Z0-9_-][a-zA-Z0-9_-][a-zA-Z0-9_-]$ ]]; then
+    echo "== YT download =="; echo
+    if [ -z $res ]; then
+        echo NO RES
+        echo "$res"
+        yt-dlp "https://www.youtube.com/watch?v=$v" -f "bestvideo[height<=900]+bestaudio[ext=m4a]/best[height<=900]" -S "codec:h264" --restrict-filenames --windows-filenames -o "$basepath/%(title)s-%(channel)s-%(upload_date)s-%(extractor)s-%(resolution)s-%(id)s.%(ext)s"
+    else
+        echo RES
+        echo "$res"
+        yt-dlp "https://www.youtube.com/watch?v=$v" -f "bestvideo[height<=600]+bestaudio[ext=m4a]/best[height<=600]" -S "codec:h264" --restrict-filenames --windows-filenames -o "$basepath/%(title)s-%(channel)s-%(upload_date)s-%(extractor)s-%(resolution)s-%(id)s.%(ext)s"
+    fi
+    echo; echo "== IPFS CID =="; echo
+    file="$(ls --time=birth -1 "$basepath" | head -n1 | grep "\.mp4")"
+    curl -k -X POST -F file=@"$basepath/$file" "http://$localip/api/v0/add?cid-version=1&chunker=size-1048576&pin=false&wrap-with-directory=true"
+else
+    echo "Invalid"
+    head -c 6 /dev/random | xxd -ps
+fi
