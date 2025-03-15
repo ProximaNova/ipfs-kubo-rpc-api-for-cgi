@@ -4,3 +4,4 @@ echo
 url="$(echo -n "$REQUEST_URI" | sed "s/^\/cgi-bin\/lynx?url=//g")"
 lynx -source "$url"
 # Doesn't work with invalid or self-signed certificates
+# no redirects: lynx -noredir -source "$url"
