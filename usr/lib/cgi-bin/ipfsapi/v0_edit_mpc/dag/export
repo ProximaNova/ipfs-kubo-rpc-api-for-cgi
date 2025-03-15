@@ -2,12 +2,15 @@
 echo "Content-type: text/plain"
 echo; url="$REQUEST_URI"
 
+# /etc/hosts looks something like 127.0.0.1 a.lan \ 10.0.0.233 b.lan
+localip="b.lan"
+
 eval $(echo "$url" | awk -F'[=&?]' '{print $2}')=$(echo "$url" | awk -F'[=&?]' '{print $3}')
 eval $(echo "$url" | awk -F'[=&?]' '{print $4}')=$(echo "$url" | awk -F'[=&?]' '{print $5}')
 
 if [ ! -z $progress ]; then progress_="&progress=$progress"; fi
 
-curl -k -X POST "https://10.0.0.232:5001/api/v0/dag/export?arg=$arg$progress_"
+curl -k -X POST "https://$localip:5001/api/v0/dag/export?arg=$arg$progress_"
 
 # arg [string]: CID of a root to recursively export Required: yes.
 # progress [bool]: Display progress on CLI. Defaults to true when STDERR is a TTY. Required: no.
