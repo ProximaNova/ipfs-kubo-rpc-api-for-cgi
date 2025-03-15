@@ -4,7 +4,8 @@ echo
 #-- page requisites (-p) downloaded like 150 MB of videos
 #-- from https://wiki.froth.zone/wiki/Prelinger_Archives
 #-- so this file was made, which has -p off
-localip="10.0.0.232"
+# /etc/hosts looks something like 127.0.0.1 a.lan \ 10.0.0.233 b.lan
+localip="b.lan"
 basepath="/zd/put/cunt/warc"
 pidcount=$(ps -ef | grep -v grep | grep "arcnop " | wc -l)
 if [[ $pidcount -gt 5 ]]; then
