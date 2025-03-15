@@ -2,7 +2,8 @@
 echo "Content-type: text/plain"
 echo
 # Works with plain URLs, not those containing "?", so /[a-zA-Z0-9]/, ".", and "/"
-localip="10.0.0.232"
+localip="b.lan"
+# /etc/hosts looks something like 127.0.0.1 a.lan \ 10.0.0.233 b.lan
 basepath="/zd/put/cunt/warc"
 pidcount=$(ps -ef | grep -v grep | grep "mem " | wc -l)
 if [ $pidcount -gt 5 ]; then
@@ -38,5 +39,5 @@ else
     curl -k -X POST -H "Content-Type: multipart/form-data" $(filesf) "https://$localip:5001/api/v0/add?cid-version=1&chunker=size-1048576&recursive=true&wrap-with-directory=true&pin=false"
 fi
 
-# bug at https://10.0.0.232/cgi-bin/mem?url=https://archive.org/details/123 = archive.org has many files (CSS/JS/font slop) so the curl command fails. wget and curl works fine if wget -p grabbed not too many files.
+# bug at https://$localip/cgi-bin/mem?url=https://archive.org/details/123 = archive.org has many files (CSS/JS/font slop) so the curl command fails. wget and curl works fine if wget -p grabbed not too many files.
 # idea: make it work with .onion links too
