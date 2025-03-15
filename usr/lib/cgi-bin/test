@@ -1,0 +1,15 @@
+#!/bin/bash
+echo "Content-type: application/json"
+echo
+url="$(echo -n "$REQUEST_URI" | sed "s/^\/cgi-bin\/test?url=//g")"
+echo $url
+#echo ==pwd:
+#pwd
+curl -sk --max-redirs 0 --max-time 30 "$url"
+
+# result of
+# $ curl -sLk 'https://10.0.0.200/cgi-bin/test?url=;pwd'
+# --->
+# ;pwd
+# ==pwd:
+# /usr/lib/cgi-bin
