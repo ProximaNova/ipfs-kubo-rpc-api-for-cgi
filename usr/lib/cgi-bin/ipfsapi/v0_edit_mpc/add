@@ -2,6 +2,9 @@
 echo "Content-type: application/json"
 echo; url="$REQUEST_URI"
 
+# /etc/hosts looks something like 127.0.0.1 a.lan \ 10.0.0.233 b.lan
+localip="b.lan"
+
 eval $(echo "$url" | awk -F'[=&?]' '{print $2}')=$(echo "$url" | awk -F'[=&?]' '{print $3}')
 eval $(echo "$url" | awk -F'[=&?]' '{print $4}')=$(echo "$url" | awk -F'[=&?]' '{print $5}')
 eval $(echo "$url" | awk -F'[=&?]' '{print $6}')=$(echo "$url" | awk -F'[=&?]' '{print $7}')
@@ -49,7 +52,7 @@ if [ ! -z $mode ]; then mode_="&mode=$mode"; fi
 if [ ! -z $mtime ]; then mtime_="&mtime=$mtime"; fi
 if [ ! -z $mtimensecs ]; then mtimensecs_="&mtime-nsecs=$mtimensecs"; fi
 
-curl -k -X POST -F file=@"$file" "https://10.0.0.232:5001/api/v0/add?$quiet_$quieter_$silent_$progress_$trickle_$onlyhash_$wrapwithdirectory_$chunker_$rawleaves_$nocopy_$fscache_$cidversion_$hash_$inline_$inlinelimit_$pin_$tofiles_$preservemode_$preservemtime_$mode_$mtime_$mtimensecs_"
+curl -k -X POST -F file=@"$file" "https://$localip:5001/api/v0/add?$quiet_$quieter_$silent_$progress_$trickle_$onlyhash_$wrapwithdirectory_$chunker_$rawleaves_$nocopy_$fscache_$cidversion_$hash_$inline_$inlinelimit_$pin_$tofiles_$preservemode_$preservemtime_$mode_$mtime_$mtimensecs_"
 
 # quiet [bool]: Write minimal output. Required: no.
 # quieter [bool]: Write only final hash. Required: no.
