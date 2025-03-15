@@ -2,6 +2,9 @@
 echo "Content-type: text/html"
 echo; url="$REQUEST_URI"
 
+# /etc/hosts looks something like 127.0.0.1 a.lan \ 10.0.0.233 b.lan
+localip="b.lan"
+
 cd "/zd/put/html-html-gen/0"
 timedir=$(date +%s)
 mkdir $timedir; cd $timedir
@@ -94,7 +97,6 @@ if [ ! -z "$dirnobase" ]; then sed -i "s/<\x21--br><div>In folder/<br><div>In fo
 mv -n "$TEMP_FILE" "/zd/put/bash-html-gen_to_delete/htmlgen/"
 
 # Add to IPFS
-localip="10.0.0.232"
 filesf() { basedir="$(pwd)"; basedirlen=$(expr $(echo -n "$basedir" | wc --bytes) + 1); find "$basedir" -type f | basedirlen="$basedirlen" xargs -d "\n" sh -c 'for args do nobasedir=$(echo "$args" | sed -E "s/^.{$basedirlen}//g"); echo " -F "file=@"\"$args\";filename=\"$nobasedir\"" | tr -d \\n; done' _; }
 curl -k -X POST -H "Content-Type: multipart/form-data" $(filesf) "https://$localip:5001/api/v0/add?cid-version=1&chunker=size-1048576&recursive=true&wrap-with-directory=true&pin=false" | tee -a "../cids$(TZ=UTC date -u +%Y%m%d).txt" | perl -pE "s/({\"Name\":\"\",\"Hash\":\")([^\"]*)/\1<a href=\"\/ipfs\/\2\">\2<\/a>/g"
 
