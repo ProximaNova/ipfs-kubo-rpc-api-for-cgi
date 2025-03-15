@@ -1,7 +1,8 @@
 #!/bin/bash
 echo "Content-type: text/plain"
 echo
-localip="10.0.0.232"
+# /etc/hosts looks something like 127.0.0.1 a.lan \ 10.0.0.233 b.lan
+localip="b.lan"
 basepath="/zd/put/cunt/warc"
 url="$(echo -n "$REQUEST_URI" | sed "s/^\/cgi-bin\/arcchk?url=//g")"
 echo "$url" > "$basepath/chkurl.txt"
