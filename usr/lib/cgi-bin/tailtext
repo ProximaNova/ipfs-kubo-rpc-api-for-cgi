@@ -1,0 +1,8 @@
+#!/bin/bash
+echo "Content-type: text/plain"
+echo
+url="$(echo -n "$REQUEST_URI" | sed "s/^\/cgi-bin\/tailtext?url=//g")"
+urldecode=$(urlencode -d "$(echo "$url")")
+curl -sLk "$urldecode" | tail -n20
+# line-based not bytes-based, so it isn't much help on a one-line
+# text file which has a size of 60 MB
