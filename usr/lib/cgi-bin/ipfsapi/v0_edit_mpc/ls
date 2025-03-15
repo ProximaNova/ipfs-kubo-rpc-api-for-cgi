@@ -2,6 +2,9 @@
 echo "Content-type: application/json"
 echo; url="$REQUEST_URI"
 
+# /etc/hosts looks something like 127.0.0.1 a.lan \ 10.0.0.233 b.lan
+localip="b.lan"
+
 eval $(echo "$url" | awk -F'[=&?]' '{print $2}')=$(echo "$url" | awk -F'[=&?]' '{print $3}')
 eval $(echo "$url" | awk -F'[=&?]' '{print $4}')=$(echo "$url" | awk -F'[=&?]' '{print $5}')
 eval $(echo "$url" | awk -F'[=&?]' '{print $6}')=$(echo "$url" | awk -F'[=&?]' '{print $7}')
@@ -13,7 +16,7 @@ if [ ! -z $resolvetype ]; then resolvetype_="&resolve-type=$resolvetype"; fi
 if [ ! -z $size ]; then size_="&size=$size"; fi
 if [ ! -z $stream ]; then stream_="&stream=$stream"; fi
 
-curl -k -X POST "https://10.0.0.232:5001/api/v0/ls?arg=$arg$headers_$resolvetype_$size_$stream_"
+curl -k -X POST "https://$localip:5001/api/v0/ls?arg=$arg$headers_$resolvetype_$size_$stream_"
 
 # arg [string]: The path to the IPFS object(s) to list links from. Required: yes.
 # headers [bool]: Print table headers (Hash, Size, Name). Required: no.
