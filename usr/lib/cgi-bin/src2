@@ -1,0 +1,25 @@
+#!/bin/bash
+echo "Content-type: text/plain"
+echo
+url="$(echo -n "$REQUEST_URI" | sed "s/^\/cgi-bin\/src2?url=//g")"
+
+if ! [[ "$url" =~ ^https?:// ]] && ! [[ "$url" =~ ^ipfs:// ]]; then
+    echo "Error: Invalid link."
+    head -c 6 /dev/random | xxd -ps
+else
+    if [[ "$url" =~ ^https?://(localhost|127\.|10\.|172\.16\.|172\.17\.|172\.18\.|172\.19\.|172\.20\.|172\.21\.|172\.22\.|172\.23\.|172\.24\.|172\.25\.|172\.26\.|172\.27\.|172\.28\.|172\.29\.|172\.30\.|172\.31\.|192\.168\.|169\.254\.) ]]; then
+        echo "Error: Nonpublic URL"
+        head -c 6 /dev/random | xxd -ps
+    else
+        # Doesn't work with invalid or self-signed certificates
+        # Does lynx follow redirects? Yes, by default, so add -noredir
+        if [[ "$url" =~ ^ipfs:// ]]; then
+            url2="$(echo "$url" | sed "s/^ipfs../http:\/\/127.0.0.1:8080\/ipfs\//g")"
+            lynx -noredir -source "$url2"
+        else
+            lynx -noredir -source "$url"
+        fi
+    fi
+fi
+
+# Should be fine in a production environment, maybe...
