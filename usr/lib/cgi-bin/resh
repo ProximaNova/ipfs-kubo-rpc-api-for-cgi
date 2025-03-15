@@ -1,6 +1,7 @@
 #!/bin/bash
 echo "Content-type: text/plain"
 echo
-localip="10.0.0.232"
+# /etc/hosts looks something like 127.0.0.1 a.lan \ 10.0.0.233 b.lan
+localip="b.lan"
 id="$(echo -n "$REQUEST_URI" | sed "s/^\/cgi-bin\/resh?id=//g")"
 curl -sLk "https://$localip/cgi-bin/ipfsapi/v0/resolve?arg=$id" | jq .Path | sed "s/\"//g" | sed "s/^\/ipfs\///g"
