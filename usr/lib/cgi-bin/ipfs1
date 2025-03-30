@@ -1,0 +1,11 @@
+#!/bin/bash
+echo "Content-type: application/json"
+echo
+url="$(echo -n "$REQUEST_URI" | sed "s/^\/cgi-bin\/ipfs1?url=//g")"
+# /etc/hosts looks something like 127.0.0.1 a.lan \ 10.0.0.233 b.lan
+localip="b.lan"
+basepath="/zd/put/cunt/cid"
+
+urlsafe1=$(echo "$url" | sed "s/.*\///g")
+urlsafe="$(urlencode -d "$(echo "$urlsafe1")")"
+curl -sLk "$url" | curl -k -X POST -F file="@-;filename=$urlsafe" "https://$localip:5001/api/v0/add?cid-version=1&chunker=size-1048576&recursive=true&wrap-with-directory=true&pin=false" | tee -a "$basepath/cids$(TZ=UTC date -u +%Y%m%d).txt"
