@@ -4,4 +4,5 @@ nosl="$(echo "$file" | sed "s/.*\///g")"
 echo "Content-type: application/octet-stream"
 echo "Content-Disposition: attachment; filename=\"$nosl\""
 echo
-cat "$file"
+filedecode="$(urlencode -d "$(echo "$file")")"
+cat "$filedecode"
