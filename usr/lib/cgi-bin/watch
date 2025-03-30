@@ -4,17 +4,20 @@ echo
 basepath="/zd/put/cunt"
 echo "<pre>"
 v=$(echo -n $REQUEST_URI | sed "s/^\/cgi-bin\/watch?v=//g" | sed "s/&.*//g")
-re=$(echo -n $REQUEST_URI | sed "s/^.\{28\}//g") # related to the length of $v
+re=$(echo -n $REQUEST_URI | sed "s/^.\{28\}//g") # related to the length of $v - as in:
+# "/cgi-bin/watch?v=12345678901" = 28 bytes
 res=$(echo -n $re | sed "s/&..//g")
 #-- not H264 #yt-dlp "https://www.youtube.com/watch?v=$v" -f mp4 -f "bestvideo[height<=900]+bestaudio/best[height<=900]" -o $basepath/$v.mp4
 #-- not H264 #yt-dlp "https://www.youtube.com/watch?v=$v" -f "bv*[ext=mp4]+ba[ext=m4a]/b[ext=mp4]" -o $basepath/$v.mp4
 if [ -z $res ]; then
     echo NO RES
     echo "$res"
-    yt-dlp "https://www.youtube.com/watch?v=$v" -f "bestvideo[height<=900]+bestaudio[ext=m4a]/best[height<=900]" -S "codec:h264" --restrict-filenames --windows-filenames -o "$basepath/%(title)s-%(channel)s-%(upload_date)s-%(extractor)s-%(resolution)s-%(id)s.%(ext)s"
+#    yt-dlp "https://www.youtube.com/watch?v=$v" -f "bestvideo[height<=900]+bestaudio[ext=m4a]/best[height<=900]" -S "codec:h264" --restrict-filenames --windows-filenames -o "$basepath/%(title)s-%(channel)s-%(upload_date)s-%(extractor)s-%(resolution)s-%(id)s.%(ext)s"
+    yt-dlp "https://www.youtube.com/watch?v=$v" -f "bestvideo[height<=900]+bestaudio/best[height<=900]" --restrict-filenames --windows-filenames -o "$basepath/%(title)s-%(channel)s-%(upload_date)s-%(extractor)s-%(resolution)s-%(id)s.%(ext)s"
 else
     echo RES
     echo "$res"
-    yt-dlp "https://www.youtube.com/watch?v=$v" -f "bestvideo[height<=600]+bestaudio[ext=m4a]/best[height<=600]" -S "codec:h264" --restrict-filenames --windows-filenames -o "$basepath/%(title)s-%(channel)s-%(upload_date)s-%(extractor)s-%(resolution)s-%(id)s.%(ext)s"
+#    yt-dlp "https://www.youtube.com/watch?v=$v" -f "bestvideo[height<=600]+bestaudio[ext=m4a]/best[height<=600]" -S "codec:h264" --restrict-filenames --windows-filenames -o "$basepath/%(title)s-%(channel)s-%(upload_date)s-%(extractor)s-%(resolution)s-%(id)s.%(ext)s"
+    yt-dlp "https://www.youtube.com/watch?v=$v" -f "bestvideo[height<=600]+bestaudio/best[height<=600]" --restrict-filenames --windows-filenames -o "$basepath/%(title)s-%(channel)s-%(upload_date)s-%(extractor)s-%(resolution)s-%(id)s.%(ext)s"
 fi
 echo "</pre>"
