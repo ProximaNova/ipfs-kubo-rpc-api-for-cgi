@@ -1,0 +1,24 @@
+#!/bin/bash
+echo "Content-type: text/plain"
+echo
+# /etc/hosts looks something like 127.0.0.1 a.lan \ 10.0.0.233 b.lan
+localip="b.lan"
+# ...chaini?id=file%20name.txt:[IPFS CID here]
+data="$(echo -n "$REQUEST_URI" | sed "s/^\/cgi-bin\/chaini?id=//g")"
+filenme="$(echo "$data" | sed "s/:.*//g")"
+ipfscid="$(echo "$data" | sed "s/.*://g")"
+filedecode="$(urlencode -d "$(echo "$filenme")")"
+
+# Pre-hash
+nmbr=$(curl -sLk -XPOST https://b.lan:5001/api/v0/files/read?arg=/a/root/data/chain/latest)
+latest=$(curl -sLk -XPOST https://b.lan:5001/api/v0/files/stat?arg=/a/root/data/chain/$nmbr | jq .Hash | sed "s/\"//g")
+next=$(expr $nmbr + 1); time="$(date -u +%Y-%m-%dT%H:%M:%S.%NZ)"
+json=$(echo '{"nmbr":'$next',"prev":"'$latest'","time":"'$time'"}' | curl -k -X POST -F file=@- "https://$localip:5001/api/v0/add?cid-version=1&chunker=size-1048576&recursive=true&pin=false" | jq .Hash | sed "s/\"//g")
+curl -sLk -XPOST "https://$localip:5001/api/v0/files/mkdir?arg=/a/root/data/chain/$next&cid-version=1"
+curl -sLk -XPOST "https://$localip:5001/api/v0/files/cp?arg=/ipfs/$json&arg=/a/root/data/chain/$next/chain.json"
+curl -sLk -XPOST "https://$localip:5001/api/v0/files/cp?arg=/ipfs/$ipfscid&arg=/a/root/data/chain/$next/$filenme"
+
+# Post-hash
+curl -sLk -XPOST "https://b.lan:5001/api/v0/files/stat?arg=/a/root/data/chain/$next" | jq .Hash | sed "s/\"//g"
+curl -sLk -XPOST "https://b.lan:5001/api/v0/files/rm?arg=/a/root/data/chain/latest"
+echo $next | curl -sLk -XPOST -F file=@- "https://b.lan:5001/api/v0/files/write?arg=/a/root/data/chain/latest&create=true&cid-version=1"
