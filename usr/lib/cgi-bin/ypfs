@@ -4,7 +4,8 @@ echo
 basepath="/zd/put/cunt"
 localip="127.0.0.1:5000"
 v=$(echo -n $REQUEST_URI | sed "s/^\/cgi-bin\/ypfs?v=//g" | sed "s/&.*//g")
-re=$(echo -n $REQUEST_URI | sed "s/^.\{28\}//g") # related to the length of $v
+re=$(echo -n $REQUEST_URI | sed "s/^.\{27\}//g") # related to the length of $v - as in:
+# "/cgi-bin/ypfs?v=12345678901" = 27 bytes
 res=$(echo -n $re | sed "s/&..//g")
 
 # Does Bash have a thing where /^a{3}$/ = "aaa"?
@@ -13,11 +14,13 @@ if [[ "$v" =~ ^[a-zA-Z0-9_-][a-zA-Z0-9_-][a-zA-Z0-9_-][a-zA-Z0-9_-][a-zA-Z0-9_-]
     if [ -z $res ]; then
         echo NO RES
         echo "$res"
-        yt-dlp "https://www.youtube.com/watch?v=$v" -f "bestvideo[height<=900]+bestaudio[ext=m4a]/best[height<=900]" -S "codec:h264" --restrict-filenames --windows-filenames -o "$basepath/%(title)s-%(channel)s-%(upload_date)s-%(extractor)s-%(resolution)s-%(id)s.%(ext)s"
+#        yt-dlp "https://www.youtube.com/watch?v=$v" -f "bestvideo[height<=900]+bestaudio[ext=m4a]/best[height<=900]" -S "codec:h264" --restrict-filenames --windows-filenames -o "$basepath/%(title)s-%(channel)s-%(upload_date)s-%(extractor)s-%(resolution)s-%(id)s.%(ext)s"
+        yt-dlp "https://www.youtube.com/watch?v=$v" -f "bestvideo[height<=900]+bestaudio/best[height<=900]" --restrict-filenames --windows-filenames -o "$basepath/%(title)s-%(channel)s-%(upload_date)s-%(extractor)s-%(resolution)s-%(id)s.%(ext)s"
     else
         echo RES
         echo "$res"
-        yt-dlp "https://www.youtube.com/watch?v=$v" -f "bestvideo[height<=600]+bestaudio[ext=m4a]/best[height<=600]" -S "codec:h264" --restrict-filenames --windows-filenames -o "$basepath/%(title)s-%(channel)s-%(upload_date)s-%(extractor)s-%(resolution)s-%(id)s.%(ext)s"
+#        yt-dlp "https://www.youtube.com/watch?v=$v" -f "bestvideo[height<=600]+bestaudio[ext=m4a]/best[height<=600]" -S "codec:h264" --restrict-filenames --windows-filenames -o "$basepath/%(title)s-%(channel)s-%(upload_date)s-%(extractor)s-%(resolution)s-%(id)s.%(ext)s"
+        yt-dlp "https://www.youtube.com/watch?v=$v" -f "bestvideo[height<=600]+bestaudio/best[height<=600]" --restrict-filenames --windows-filenames -o "$basepath/%(title)s-%(channel)s-%(upload_date)s-%(extractor)s-%(resolution)s-%(id)s.%(ext)s"
     fi
     echo; echo "== IPFS CID =="; echo
     file="$(ls --time=birth -1 "$basepath" | head -n1 | grep "\.mp4")"
