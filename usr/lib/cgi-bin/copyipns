@@ -1,0 +1,19 @@
+#!/bin/bash
+echo "Content-type: text/plain"
+echo
+# Copy file in/to IPFS's MFS, publish to IPNS
+# /etc/hosts looks something like 127.0.0.1 a.lan \ 10.0.0.233 b.lan
+localip="b.lan"
+# ...copyipns?id=fr%20om:to
+data="$(echo -n "$REQUEST_URI" | sed "s/^\/cgi-bin\/copyipns?id=//g")"
+from="$(echo "$data" | sed "s/:.*//g")"
+to="$(echo "$data" | sed "s/.*://g")"
+todecode="$(urlencode -d "$(echo "$to")")"
+fromdecode="$(urlencode -d "$(echo "$from")")"
+
+curl -sLk -XPOST "https://$localip:5001/api/v0/files/cp?arg=$fromdecode&arg=$todecode&parents=true"
+latest=$(curl -sLk -XPOST https://b.lan:5001/api/v0/files/stat?arg=/ | jq .Hash | sed "s/\"//g")
+curl -sLk -XPOST "https://b.lan:5001/api/v0/name/publish?arg=$latest"
+
+#todo: up nginx's gateway timeout to minutes
+curl -sLk -XPOST "https://10.0.0.229:5001/api/v0/name/publish?arg=$latest" ; curl -sLk -XPOST "https://10.0.0.229:5001/api/v0/name/publish?arg=$latest" ; curl -sLk -XPOST "https://10.0.0.229:5001/api/v0/name/publish?arg=$latest"  ; curl -sLk -XPOST "https://10.0.0.229:5001/api/v0/name/publish?arg=$latest" ; curl -sLk -XPOST "https://10.0.0.229:5001/api/v0/name/publish?arg=$latest" ; curl -sLk -XPOST "https://10.0.0.229:5001/api/v0/name/publish?arg=$latest" ; curl -sLk -XPOST "https://10.0.0.229:5001/api/v0/name/publish?arg=$latest"  ; curl -sLk -XPOST "https://10.0.0.229:5001/api/v0/name/publish?arg=$latest" ; curl -sLk -XPOST "https://10.0.0.229:5001/api/v0/name/publish?arg=$latest"; curl -sLk -XPOST "https://10.0.0.229:5001/api/v0/name/publish?arg=$latest" ; curl -sLk -XPOST "https://10.0.0.229:5001/api/v0/name/publish?arg=$latest"  ; curl -sLk -XPOST "https://10.0.0.229:5001/api/v0/name/publish?arg=$latest" ; curl -sLk -XPOST "https://10.0.0.229:5001/api/v0/name/publish?arg=$latest" ; curl -sLk -XPOST "https://10.0.0.229:5001/api/v0/name/publish?arg=$latest" ; curl -sLk -XPOST "https://10.0.0.229:5001/api/v0/name/publish?arg=$latest" ; curl -sLk -XPOST "https://10.0.0.229:5001/api/v0/name/publish?arg=$latest" ; curl -sLk -XPOST "https://10.0.0.229:5001/api/v0/name/publish?arg=$latest"
