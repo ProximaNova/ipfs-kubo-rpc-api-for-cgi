@@ -2,13 +2,13 @@
 echo "Content-type: text/plain"
 echo
 # Works with plain URLs, not those containing "?", so /[a-zA-Z0-9]/, ".", and "/"
+# /etc/hosts looks something like 127.0.0.1 a.lan \ 10.0.0.231 b.lan
 localip="b.lan"
-# /etc/hosts looks something like 127.0.0.1 a.lan \ 10.0.0.233 b.lan
 basepath="/zd/put/cunt/warc"
-pidcount=$(ps -ef | grep -v grep | grep "mem " | wc -l)
+pidcount=$(ps -ef | grep -v grep | grep "memc " | wc -l)
 if [ $pidcount -gt 5 ]; then
     echo "Too many arc PID(s) detected. Try again later. PID(s):"
-    ps -ef | grep -v grep | grep "mem " | grep -n $
+    ps -ef | grep -v grep | grep "memc " | grep -n $
     exit 0
 else
     url="$(echo -n "$REQUEST_URI" | sed "s/^\/cgi-bin\/memc?url=//g")"
@@ -26,7 +26,7 @@ else
     echo "time is: $time, $timeu"; echo
 
     echo "Main CID at the bottom:"
-    cd $basepath; TZ=UTC wget --no-check-certificate -p --span-hosts --adjust-extension --convert-links --restrict-file-names=windows --warc-max-size=99123456 --warc-cdx -e robots=off --warc-file=$basepath/../memento/$timeu/$time-$urlsafe --directory-prefix=$basepath/../memento/$timeu/memento/$time/ "$url" 2>/dev/null
+    cd $basepath; TZ=UTC wget --content-on-error --no-check-certificate -p --span-hosts --adjust-extension --convert-links --restrict-file-names=windows --warc-max-size=99123456 --warc-cdx -e robots=off --warc-file=$basepath/../memento/$timeu/$time-$urlsafe --directory-prefix=$basepath/../memento/$timeu/memento/$time/ "$url" 2>/dev/null
     urlpath=$(echo $url | sed "s/^https\?:\/\///g")
 
 #   if [[ ! "$str" =~ index\.html$ ]]; then echo move; fi
@@ -39,14 +39,27 @@ else
     latest=$(curl -sLk -XPOST https://b.lan:5001/api/v0/files/stat?arg=/a/root/data/chain/$nmbr | jq .Hash | sed "s/\"//g")
     next=$(expr $nmbr + 1); time="$(date -u +%Y-%m-%dT%H:%M:%S.%NZ)"
     echo '{"nmbr":'$next',"prev":"'$latest'","time":"'$time'"}' | tee $basepath/../memento/$timeu/chain.json 1>/dev/null
-    filesf() { basedir="$basepath/../memento/$timeu"; basedirlen=$(expr $(echo -n "$basedir" | wc --bytes) + 1); find "$basedir" -type f | basedirlen="$basedirlen" xargs -d "\n" sh -c 'for args do nobasedir=$(echo "$args" | sed -E "s/^.{$basedirlen}//g"); echo " -F "file=@"\"$args\";filename=\"$nobasedir\"" | tr -d \\n; done' _; }
-    hex=$(curl -sLk -X POST -H "Content-Type: multipart/form-data" $(filesf) "https://$localip:5001/api/v0/add?cid-version=1&chunker=size-1048576&recursive=true&wrap-with-directory=true&pin=false" 2>&1 | xxd -ps | tr -d \\n)
+#    filesf() { basedir="$basepath/../memento/$timeu"; basedirlen=$(expr $(echo -n "$basedir" | wc --bytes) + 1); find "$basedir" -type f | basedirlen="$basedirlen" xargs -d "\n" sh -c 'for args do nobasedir=$(echo "$args" | sed -E "s/^.{$basedirlen}//g"); echo " -F "file=@"\"$args\";filename=\"$nobasedir\"" | tr -d \\n; done' _; }
+#    hex=$(curl -sLk -X POST -H "Content-Type: multipart/form-data" $(filesf) "https://$localip:5001/api/v0/add?cid-version=1&chunker=size-1048576&recursive=true&wrap-with-directory=true&pin=false" 2>&1 | xxd -ps | tr -d \\n)
+#####
+    # Works if whitespace is in any filename
+    ## WARNING: eval
+    cd $basepath/../memento/$timeu
+    eval $(echo "arr=($(basedir="$(pwd)"; basedirlen=$(echo "$basedir" | wc --bytes); find "$basedir" -type f | basedirlen="$basedirlen" xargs -d "\n" sh -c 'for args do nobasedir=$(echo "$args" | sed -E "s/^.{$basedirlen}//g"); echo "\"file=@$args;filename=$nobasedir\" " | tr -d \\n; done' _ | sed "s/ $//g"))")
+    toexe="$(i=0; text='curl -sLk -XPOST -H "Content-Type: multipart/form-data"'; while [[ i -lt ${#arr[@]} ]]; do text="$text -F \"${arr[$i]}\""; echo $text; ((i++)); done | tail -n1 | sed "s/$/ \"https:\/\/b.lan:5001\/api\/v0\/add?cid-version=1\&chunker=size-1048576\&recursive=true\&wrap-with-directory=true\&pin=false\"/g")"
+    ## WARNING: eval
+    hex="$(eval $(echo $toexe) | xxd -ps | tr -d \\n)"
+#####
     cid=$(echo $hex | xxd -ps -r | tail -n1 | perl -pE "s/{\"Name\":\"\",\"Hash\":\"([^\"]*)\".*/\1/g")
     echo $hex | xxd -ps -r
+
     # Post-hash
     curl -sLk -XPOST "https://b.lan:5001/api/v0/files/cp?arg=/ipfs/$cid&arg=/a/root/data/chain/$next"
-    curl -sLk -XPOST https://b.lan:5001/api/v0/files/rm?arg=/a/root/data/chain/latest
+    curl -sLk -XPOST "https://b.lan:5001/api/v0/files/rm?arg=/a/root/data/chain/latest"
     echo $next | curl -sLk -XPOST -F file=@- "https://b.lan:5001/api/v0/files/write?arg=/a/root/data/chain/latest&create=true&cid-version=1"
+    urlcid=$(curl -sLk -XPOST https://b.lan:5001/api/v0/ls?arg=$cid | jq | grep -A1 "\.txt\"" | tail -n1 | sed "s/\",$//g" | sed "s/.*\"//g")
+    echo $cid | curl -sLk -XPOST -F file=@- "https://b.lan:5001/api/v0/files/write?arg=/findurl/$urlcid&create=true&cid-version=1"
+    echo; echo "Trying to copy to HPC:"; curl -sLk "https://b.lan/cgi-bin/taildh?id=$cid"
 fi
 
 # Bug at https://$localip/cgi-bin/mem?url=https://archive.org/details/123 = archive.org has many files (CSS/JS/font slop) so the curl command fails. wget and curl works fine if wget -p grabbed not too many files.
