@@ -1,0 +1,51 @@
+#!/bin/bash
+echo "Content-type: text/plain"
+echo
+# No raws in IPFS folder
+# /etc/hosts looks something like 127.0.0.1 a.lan \ 10.0.0.231 b.lan
+localip="b.lan"
+basepath="/zd/put/cunt/1urlwarc"
+pidcount=$(ps -ef | grep -v grep | grep "arcc " | wc -l)
+if [ $pidcount -gt 5 ]; then
+    echo "Too many arc PID(s) detected. Try again later. PID(s):"
+    ps -ef | grep -v grep | grep "arcc " | grep -n $
+    exit 0
+else
+    url="$(echo -n "$REQUEST_URI" | sed "s/^\/cgi-bin\/arcc?url=//g")"
+    timedir="$(TZ=UTC date -u +%Y%m%d%H%M%S)"
+    timeu=$(date +%s)
+    urlsafe=$(echo "$url" | sed "s/:\|\/\|?\|=\|&\|(\|)\|,\|@\|+\|*\|%\|#/-/g")
+    urllen=$(echo -n $timedir-$urlsafe | wc --bytes)
+    if [ $urllen -gt 200 ]; then
+        urlsafe="$(echo $urlsafe | perl -pE "s/^(.{200}).*/\1.URL2LONG/g")"
+    fi
+
+    mkdir $basepath/${timedir}
+    mkdir $basepath/${timedir}-raw
+    echo -n "url is: "; echo "$url" | tee $basepath/$timedir/$timedir-$urlsafe.txt
+    echo "urlsafe: $urlsafe"
+    echo "time is: $timedir, $timeu"; echo
+
+    echo "Main CID at the bottom:"
+    cd $basepath/$timedir; TZ=UTC wget --content-on-error --no-check-certificate -p --span-hosts --adjust-extension --convert-links --restrict-file-names=windows --warc-max-size=99123456 --warc-cdx -e robots=off --warc-file=$basepath/$timedir/$timedir-$urlsafe --directory-prefix=$basepath/${timedir}-raw/ "$url" 2>/dev/null
+    urlpath=$(echo $url | sed "s/^https\?:\/\///g")
+
+#   if [[ ! "$str" =~ index\.html$ ]]; then echo move; fi
+#   / = // in path///index.html or path/index.html
+    stat -t "$basepath/${timedir}-raw/${urlpath}/index.html" 1>/dev/null 2>/dev/null || mv -n "$basepath/${timedir}-raw/${urlpath}.html" "$basepath/${timedir}-raw/${urlpath}"
+    if [[ "$urlpath" =~ : ]]; then urlpathcolon="$(echo "$urlpath" | sed "s/:/%3A/g")"; stat -t "$basepath/${timedir}-raw/${urlpathcolon}/index.html" 1>/dev/null 2>/dev/null || mv -n "$basepath/${timedir}-raw/${urlpathcolon}.html" "$basepath/${timedir}-raw/${urlpathcolon}"; fi
+
+    # Pre-hash
+    nmbr=$(curl -sLk -XPOST https://b.lan:5001/api/v0/files/read?arg=/a/root/data/chain/latest)
+    latest=$(curl -sLk -XPOST https://b.lan:5001/api/v0/files/stat?arg=/a/root/data/chain/$nmbr | jq .Hash | sed "s/\"//g")
+    next=$(expr $nmbr + 1); timeblock="$(date -u +%Y-%m-%dT%H:%M:%S.%NZ)"
+    echo '{"nmbr":'$next',"prev":"'$latest'","time":"'$timeblock'"}' | tee $basepath/${timedir}/chain.json 1>/dev/null
+    filesf() { basedir="$basepath/${timedir}"; basedirlen=$(expr $(echo -n "$basedir" | wc --bytes) + 1); find "$basedir" -type f | basedirlen="$basedirlen" xargs -d "\n" sh -c 'for args do nobasedir=$(echo "$args" | sed -E "s/^.{$basedirlen}//g"); echo " -F "file=@"\"$args\";filename=\"$nobasedir\"" | tr -d \\n; done' _; }
+    hex=$(curl -sLk -X POST -H "Content-Type: multipart/form-data" $(filesf) "https://$localip:5001/api/v0/add?cid-version=1&chunker=size-1048576&recursive=true&wrap-with-directory=true&pin=false" 2>&1 | xxd -ps | tr -d \\n)
+    cid=$(echo $hex | xxd -ps -r | tail -n1 | perl -pE "s/{\"Name\":\"\",\"Hash\":\"([^\"]*)\".*/\1/g")
+    echo $hex | xxd -ps -r
+    # Post-hash
+    curl -sLk -XPOST "https://b.lan:5001/api/v0/files/cp?arg=/ipfs/$cid&arg=/a/root/data/chain/$next"
+    curl -sLk -XPOST https://b.lan:5001/api/v0/files/rm?arg=/a/root/data/chain/latest
+    echo $next | curl -sLk -XPOST -F file=@- "https://b.lan:5001/api/v0/files/write?arg=/a/root/data/chain/latest&create=true&cid-version=1"
+fi
