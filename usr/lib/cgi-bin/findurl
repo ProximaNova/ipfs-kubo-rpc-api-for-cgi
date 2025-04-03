@@ -1,0 +1,27 @@
+#!/bin/bash
+echo "Content-type: text/html"
+echo; url="$REQUEST_URI"
+# Adds text to IPFS if /api/v0/rm or rmblock isn't used
+# /etc/hosts looks something like 127.0.0.1 a.lan \ 10.0.0.232 b.lan
+localip="b.lan"
+thiscmp="$SERVER_NAME"
+if [ -z "$HTTPS" ]; then proto="http"; else proto="https"; fi
+file="$(echo -n "$url" | sed "s/^\/cgi-bin\/findurl?url=//g")"
+# arcchk uses "echo $url" with no echo -n
+# force enabled: $rawleaves_ -> raw-leaves=true
+urlcid="$(echo "$file" | curl -sLk -XPOST -F file=@- "https://$localip:5001/api/v0/add?raw-leaves=true" | jq .Hash | sed "s/\"//g")"
+urlcidshort="$(echo "$urlcid" | perl -pE "s/^(....).*(....)/\1...\2/g")"
+capture="$(curl -sLk -XPOST "https://$localip:5001/api/v0/files/read?arg=/findurl/$urlcid")"
+
+echo '<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" /><title>findurl: '"$file"'</title></head><body><h2>IPFS web archive</h2>'
+echo "<p><b>URL text: <a href=\"$file\">$file</a></b>"
+echo "<br>URL text as raw block: <a href=\"$proto://$thiscmp/ipfs/$urlcid\">/ipfs/$urlcid</a>"
+echo "<br>Check 1: <a href=\"$proto://$thiscmp/ipns/k51qzi5uqu5dk953fb65owkia1jo06tz15vwm59b68shdwjc115gc9akxw7reg/findurl/$urlcid\">/ipns/k51qzi5uqu5dk953fb65owkia1jo06tz15vwm59b68shdwjc115gc9akxw7reg/findurl/$urlcidshort</a>"
+echo "<br>Check 2: <a href=\"$proto://$thiscmp/ipns/k51qzi5uqu5diwzufekv38cynmdqlh0lwic1ve0d9w5a0glpy52qjc0l77h4t5/findurl/$urlcid\">/ipns/k51qzi5uqu5diwzufekv38cynmdqlh0lwic1ve0d9w5a0glpy52qjc0l77h4t5/findurl/$urlcidshort</a>"
+echo "<br><b>Capture of that URL: <a href=\"$proto://$thiscmp/ipfs/$capture\">/ipfs/$capture</a></b></p>"
+echo "<p>(Capture = webpage or web file captured as WARC and/or raw)</p>"
+echo "</body></html>"
+
+# Todo: if at localhost:81 with no localhost/ipfs/ then it won't work,
+# so some variables from Apache/CGI are needed. Fixed: $REMOTE_ADDR.
+# Nope, $SERVER_NAME is better than $REMOTE_ADDR for this.
