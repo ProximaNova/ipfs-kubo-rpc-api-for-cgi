@@ -1,0 +1,15 @@
+#!/bin/bash
+echo "Content-type: text/plain"
+echo
+# Copy file in/to IPFS's MFS
+# /etc/hosts looks something like 127.0.0.1 a.lan \ 10.0.0.233 b.lan
+localip="b.lan"
+# ...copyi?id=fr%20om:to
+data="$(echo -n "$REQUEST_URI" | sed "s/^\/cgi-bin\/copyi?id=//g")"
+from="$(echo "$data" | sed "s/:.*//g")"
+to="$(echo "$data" | sed "s/.*://g")"
+todecode="$(urlencode -d "$(echo "$to")")"
+fromdecode="$(urlencode -d "$(echo "$from")")"
+
+curl -sLk -XPOST "https://$localip:5001/api/v0/files/cp?arg=$fromdecode&arg=$todecode&parents=true"
+echo "Copied \"$fromdecode\" to \"$todecode\""
